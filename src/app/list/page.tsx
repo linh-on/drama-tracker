@@ -42,8 +42,9 @@ export default function MyList() {
 
   const statusFilters: { value: WatchStatus | "ALL"; label: string }[] = [
     { value: "ALL", label: "All" },
+    { value: "CURRENTLY_WATCHING", label: "Watching" },
+    { value: "PARTIALLY_WATCHED", label: "Partially Watched" },
     { value: "COMPLETED", label: "Completed" },
-    { value: "PARTIALLY_WATCHED", label: "Watching" },
     { value: "PLAN_TO_WATCH", label: "Plan to Watch" },
   ];
 

@@ -11,7 +11,7 @@ export default function Dashboard() {
   const { shows, loading, updateShow } = useShows();
   const [selected, setSelected] = useState<Show | null>(null);
 
-  const watching = shows.filter((s) => s.status === "PARTIALLY_WATCHED");
+  const watching = shows.filter((s) => s.status === "CURRENTLY_WATCHING");
   const completed = shows.filter((s) => s.status === "COMPLETED");
   const planToWatch = shows.filter((s) => s.status === "PLAN_TO_WATCH");
 

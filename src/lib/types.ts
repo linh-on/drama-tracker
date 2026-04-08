@@ -1,4 +1,4 @@
-export type WatchStatus = 'COMPLETED' | 'PARTIALLY_WATCHED' | 'PLAN_TO_WATCH';
+export type WatchStatus = 'CURRENTLY_WATCHING' | 'PARTIALLY_WATCHED' | 'COMPLETED' | 'PLAN_TO_WATCH';
 export type ShowType = 'SERIES' | 'MOVIE' | 'ANIME' | 'WEB_DRAMA' | 'VARIETY';
 export type Country = 'KOREAN' | 'THAI' | 'VIETNAMESE' | 'CHINESE_TAIWANESE' | 'JAPANESE' | 'AMERICAN';
 

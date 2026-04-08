@@ -22,7 +22,13 @@ export function useShows() {
       body: JSON.stringify(show),
     });
     const updated = await res.json();
-    setShows((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+
+    // Preserve keywords from the original show since PUT doesn't return them
+    setShows((prev) =>
+      prev.map((s) =>
+        s.id === updated.id ? { ...updated, keywords: show.keywords } : s,
+      ),
+    );
   };
 
   return { shows, loading, updateShow };
