@@ -24,9 +24,7 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
             <span className="text-4xl">📺</span>
           </div>
           <div className="p-3">
-            <h3 className="font-medium text-sm line-clamp-2 mb-2">
-              {show.title}
-            </h3>
+            <h3 className="font-medium text-sm mb-1">{show.title}</h3>
             <CategoryBadge country={show.country} />
             {show.current_ep && (
               <p className="text-[10px] text-gray-500 mt-1">
@@ -47,20 +45,28 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
       onClick={onClick}
     >
       <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+        {/* Poster */}
         <div className="aspect-[2/3] bg-gradient-to-br from-[#f5e6e8] to-[#e8d5f0] flex items-center justify-center">
           <span className="text-5xl">📺</span>
         </div>
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-medium line-clamp-2 flex-1">{show.title}</h3>
-            <StarRating rating={show.rating} readonly />
-          </div>
-          <div className="flex flex-wrap gap-2 mb-3">
+
+        {/* Info */}
+        <div className="p-4 space-y-2">
+          {/* Full title — no line clamp */}
+          <h3 className="font-medium text-sm leading-snug">{show.title}</h3>
+
+          {/* Star rating below title */}
+          <StarRating rating={show.rating} readonly />
+
+          {/* Badges */}
+          <div className="flex flex-wrap gap-1.5">
             <CategoryBadge country={show.country} />
             <StatusTag status={show.status} />
           </div>
+
+          {/* Keywords */}
           {show.keywords.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1">
               {show.keywords.slice(0, 3).map((kw) => (
                 <span
                   key={kw.code}
@@ -71,6 +77,14 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
                 </span>
               ))}
             </div>
+          )}
+
+          {/* Episode progress */}
+          {show.current_ep && (
+            <p className="text-xs text-gray-400">
+              {show.status === "CURRENTLY_WATCHING" ? "▶ " : "⏸ "}
+              {show.current_ep}
+            </p>
           )}
         </div>
       </div>
