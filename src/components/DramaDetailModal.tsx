@@ -52,11 +52,24 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
           </button>
 
           <div className="p-8">
+            {/* Top section */}
             <div className="flex gap-6 mb-6">
-              <div className="w-32 h-48 flex-shrink-0 bg-gradient-to-br from-[#f5e6e8] to-[#e8d5f0] rounded-2xl flex items-center justify-center">
-                <span className="text-5xl">📺</span>
+              {/* Poster — real image or emoji fallback */}
+              <div className="w-36 flex-shrink-0">
+                {edited.poster_url ? (
+                  <img
+                    src={edited.poster_url}
+                    alt={edited.title}
+                    className="w-full rounded-2xl shadow-md"
+                  />
+                ) : (
+                  <div className="w-full h-52 bg-gradient-to-br from-[#f5e6e8] to-[#e8d5f0] rounded-2xl flex items-center justify-center">
+                    <span className="text-5xl">📺</span>
+                  </div>
+                )}
               </div>
 
+              {/* Info */}
               <div className="flex-1">
                 <h2 className="text-2xl mb-3">{edited.title}</h2>
                 <div className="flex flex-wrap gap-2 mb-4">
@@ -146,7 +159,20 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
               </div>
             </div>
 
+            {/* Synopsis */}
+            {edited.synopsis && (
+              <div className="mb-4 p-4 bg-gray-50 rounded-2xl">
+                <label className="block text-sm text-gray-600 mb-2">
+                  Synopsis
+                </label>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {edited.synopsis}
+                </p>
+              </div>
+            )}
+
             <div className="space-y-4">
+              {/* Keywords */}
               {edited.keywords.length > 0 && (
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">
@@ -166,6 +192,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                 </div>
               )}
 
+              {/* Notes */}
               <div>
                 <label className="block text-sm text-gray-600 mb-2">
                   My Notes
@@ -181,6 +208,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                 />
               </div>
 
+              {/* Favorite */}
               <div>
                 <button
                   onClick={() =>
@@ -196,6 +224,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                 </button>
               </div>
 
+              {/* Delete confirmation */}
               {confirmDelete && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -224,6 +253,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
               )}
             </div>
 
+            {/* Action buttons */}
             <div className="flex gap-3 mt-6 pt-6 border-t border-gray-100">
               <button
                 onClick={() => setConfirmDelete(true)}
@@ -232,9 +262,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                 <Trash2 size={16} />
                 Delete
               </button>
-
               <div className="flex-1" />
-
               <button
                 onClick={onClose}
                 className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"

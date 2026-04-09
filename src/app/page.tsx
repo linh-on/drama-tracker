@@ -8,7 +8,7 @@ import { motion } from "motion/react";
 import { TrendingUp, CheckCircle, Clock } from "lucide-react";
 
 export default function Dashboard() {
-  const { shows, loading, updateShow } = useShows();
+  const { shows, loading, updateShow, deleteShow } = useShows();
   const [selected, setSelected] = useState<Show | null>(null);
 
   const watching = shows.filter((s) => s.status === "CURRENTLY_WATCHING");
@@ -25,6 +25,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-white pt-16">
       <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Welcome */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -34,6 +35,7 @@ export default function Dashboard() {
           <p className="text-gray-600">Here's your drama journey at a glance</p>
         </motion.div>
 
+        {/* Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -51,6 +53,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
           <div className="bg-gradient-to-br from-[#42a5f5]/10 to-[#42a5f5]/5 rounded-2xl p-6 border border-[#42a5f5]/20">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#42a5f5]/20 flex items-center justify-center">
@@ -62,6 +65,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
           <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl p-6 border border-gray-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center">
@@ -75,6 +79,7 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
+        {/* Currently Watching */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -105,11 +110,14 @@ export default function Dashboard() {
 
       {selected && (
         <DramaDetailModal
-  show={selected}
-  onClose={() => setSelected(null)}
-  onUpdate={updateShow}
-  onDelete={(id) => { deleteShow(id); setSelected(null); }}
-/>
+          show={selected}
+          onClose={() => setSelected(null)}
+          onUpdate={updateShow}
+          onDelete={(id) => {
+            deleteShow(id);
+            setSelected(null);
+          }}
+        />
       )}
 
       <style>{`.scrollbar-hide::-webkit-scrollbar{display:none}.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}`}</style>

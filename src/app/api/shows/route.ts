@@ -92,11 +92,13 @@ export async function POST(req: NextRequest) {
       comment,
       is_favorite,
       keywords,
+      poster_url,
+      synopsis,
     } = body;
 
     const result = await pool.query(
-      `INSERT INTO shows (title, country, type, status, current_ep, rating, comment, is_favorite)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      `INSERT INTO shows (title, country, type, status, current_ep, rating, comment, is_favorite, poster_url, synopsis)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
       [
         title,
         country,
@@ -106,12 +108,13 @@ export async function POST(req: NextRequest) {
         rating || null,
         comment || null,
         is_favorite || false,
+        poster_url || null,
+        synopsis || null,
       ],
     );
 
     const show = result.rows[0];
 
-    // Link keywords
     if (keywords?.length > 0) {
       for (const code of keywords) {
         const kw = await pool.query("SELECT id FROM keywords WHERE code = $1", [

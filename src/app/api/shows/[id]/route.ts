@@ -51,13 +51,15 @@ export async function PUT(
       comment,
       is_favorite,
       keywords,
+      poster_url,
+      synopsis,
     } = body;
 
     const result = await pool.query(
       `UPDATE shows
        SET title=$1, country=$2, type=$3, status=$4, current_ep=$5,
-           rating=$6, comment=$7, is_favorite=$8, updated_at=NOW()
-       WHERE id=$9 RETURNING *`,
+           rating=$6, comment=$7, is_favorite=$8, poster_url=$9, synopsis=$10, updated_at=NOW()
+       WHERE id=$11 RETURNING *`,
       [
         title,
         country,
@@ -67,6 +69,8 @@ export async function PUT(
         rating || null,
         comment || null,
         is_favorite || false,
+        poster_url || null,
+        synopsis || null,
         id,
       ],
     );

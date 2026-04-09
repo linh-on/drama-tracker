@@ -1,6 +1,16 @@
-export type WatchStatus = 'CURRENTLY_WATCHING' | 'PARTIALLY_WATCHED' | 'COMPLETED' | 'PLAN_TO_WATCH';
-export type ShowType = 'SERIES' | 'MOVIE' | 'ANIME' | 'WEB_DRAMA' | 'VARIETY';
-export type Country = 'KOREAN' | 'THAI' | 'VIETNAMESE' | 'CHINESE_TAIWANESE' | 'JAPANESE' | 'AMERICAN';
+export type WatchStatus =
+  | "CURRENTLY_WATCHING"
+  | "PARTIALLY_WATCHED"
+  | "COMPLETED"
+  | "PLAN_TO_WATCH";
+export type ShowType = "SERIES" | "MOVIE" | "ANIME" | "WEB_DRAMA" | "VARIETY";
+export type Country =
+  | "KOREAN"
+  | "THAI"
+  | "VIETNAMESE"
+  | "CHINESE_TAIWANESE"
+  | "JAPANESE"
+  | "AMERICAN";
 
 export interface Keyword {
   id: number;
@@ -19,6 +29,8 @@ export interface Show {
   status: WatchStatus;
   current_ep: string | null;
   is_favorite: boolean;
+  poster_url: string | null;
+  synopsis: string | null;
   created_at: string;
   updated_at: string;
   keywords: Keyword[];

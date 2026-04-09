@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Country, ShowType, WatchStatus } from "@/lib/types";
 import { StarRating } from "./StarRating";
-import { X } from "lucide-react";
+import { X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface Keyword {
@@ -12,15 +12,30 @@ interface Keyword {
   color: string;
 }
 
+interface TMDBResult {
+  tmdb_id: number;
+  title: string;
+  poster_url: string | null;
+  synopsis: string | null;
+  media_type: string;
+  year: string;
+}
+
 interface Props {
   onClose: () => void;
-  onAdd: () => void; // refresh the list after adding
+  onAdd: () => void;
 }
 
 export function AddShowModal({ onClose, onAdd }: Props) {
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // TMDB search state
+  const [searchResults, setSearchResults] = useState<TMDBResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -32,6 +47,8 @@ export function AddShowModal({ onClose, onAdd }: Props) {
     comment: "",
     is_favorite: false,
     selectedKeywords: [] as string[],
+    poster_url: null as string | null,
+    synopsis: null as string | null,
   });
 
   useEffect(() => {
@@ -39,6 +56,51 @@ export function AddShowModal({ onClose, onAdd }: Props) {
       .then((res) => res.json())
       .then(setKeywords);
   }, []);
+
+  // Search TMDB as user types
+  const handleTitleChange = (value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      title: value,
+      poster_url: null,
+      synopsis: null,
+    }));
+
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+    if (value.trim().length < 2) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    searchTimeout.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`/api/tmdb?query=${encodeURIComponent(value)}`);
+        const data = await res.json();
+        setSearchResults(data);
+        setShowDropdown(data.length > 0);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 400);
+  };
+
+  // When user picks a result from dropdown
+  const handleSelectResult = (result: TMDBResult) => {
+    setForm((prev) => ({
+      ...prev,
+      title: result.title,
+      poster_url: result.poster_url,
+      synopsis: result.synopsis,
+      type: result.media_type === "movie" ? "MOVIE" : "SERIES",
+    }));
+    setShowDropdown(false);
+    setSearchResults([]);
+  };
 
   const toggleKeyword = (code: string) => {
     setForm((prev) => ({
@@ -72,11 +134,12 @@ export function AddShowModal({ onClose, onAdd }: Props) {
           comment: form.comment || null,
           is_favorite: form.is_favorite,
           keywords: form.selectedKeywords,
+          poster_url: form.poster_url,
+          synopsis: form.synopsis,
         }),
       });
 
       if (!res.ok) throw new Error("Failed to add show");
-
       onAdd();
       onClose();
     } catch (err) {
@@ -89,7 +152,6 @@ export function AddShowModal({ onClose, onAdd }: Props) {
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -97,15 +159,12 @@ export function AddShowModal({ onClose, onAdd }: Props) {
           className="absolute inset-0 bg-black/20 backdrop-blur-sm"
           onClick={onClose}
         />
-
-        {/* Modal */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
         >
-          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full z-10 transition-colors"
@@ -117,22 +176,104 @@ export function AddShowModal({ onClose, onAdd }: Props) {
             <h2 className="text-2xl mb-6">Add New Show</h2>
 
             <div className="space-y-4">
-              {/* Title */}
-              <div>
+              {/* Title with TMDB search */}
+              <div className="relative">
                 <label className="block text-sm text-gray-600 mb-1">
                   Title <span className="text-red-400">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                  placeholder="e.g. Crash Landing on You"
-                  autoFocus
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={form.title}
+                    onChange={(e) => handleTitleChange(e.target.value)}
+                    onFocus={() =>
+                      searchResults.length > 0 && setShowDropdown(true)
+                    }
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm pr-10"
+                    placeholder="e.g. Crash Landing on You"
+                    autoFocus
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {searching ? (
+                      <div className="w-4 h-4 border-2 border-[#d4a5a5] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Search size={16} className="text-gray-400" />
+                    )}
+                  </div>
+                </div>
+
+                {/* TMDB Dropdown */}
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 overflow-hidden">
+                    {searchResults.map((result) => (
+                      <button
+                        key={result.tmdb_id}
+                        onClick={() => handleSelectResult(result)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                      >
+                        {/* Mini poster */}
+                        {result.poster_url ? (
+                          <img
+                            src={result.poster_url}
+                            alt={result.title}
+                            className="w-8 h-12 object-cover rounded-lg flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-8 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span className="text-lg">📺</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {result.title}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {result.media_type === "movie"
+                              ? "🎬 Movie"
+                              : "📺 Series"}{" "}
+                            {result.year && `· ${result.year}`}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Country + Type row */}
+              {/* Poster preview if selected from TMDB */}
+              {form.poster_url && (
+                <div className="flex gap-4 p-3 bg-gray-50 rounded-2xl border border-gray-200">
+                  <img
+                    src={form.poster_url}
+                    alt={form.title}
+                    className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-700 mb-1">
+                      ✅ Matched from TMDB
+                    </p>
+                    {form.synopsis && (
+                      <p className="text-xs text-gray-500 line-clamp-3">
+                        {form.synopsis}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() =>
+                      setForm((prev) => ({
+                        ...prev,
+                        poster_url: null,
+                        synopsis: null,
+                      }))
+                    }
+                    className="text-gray-400 hover:text-gray-600 self-start"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
+              {/* Country + Type */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
@@ -153,7 +294,6 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                     <option value="AMERICAN">American</option>
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
                     Type
@@ -197,7 +337,7 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                 </select>
               </div>
 
-              {/* Current Episode — only for Currently Watching */}
+              {/* Current Episode */}
               {form.status === "CURRENTLY_WATCHING" && (
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
@@ -215,7 +355,7 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                 </div>
               )}
 
-              {/* Stopped At — only for Partially Watched */}
+              {/* Stopped At */}
               {form.status === "PARTIALLY_WATCHED" && (
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
@@ -308,11 +448,9 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                 </button>
               </div>
 
-              {/* Error */}
               {error && <p className="text-red-400 text-sm">{error}</p>}
             </div>
 
-            {/* Action buttons */}
             <div className="flex gap-3 mt-6 pt-6 border-t border-gray-100">
               <button
                 onClick={onClose}
