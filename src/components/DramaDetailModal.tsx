@@ -4,27 +4,33 @@ import { Show, WatchStatus } from "@/lib/types";
 import { CategoryBadge } from "./CategoryBadge";
 import { StatusTag } from "./StatusTag";
 import { StarRating } from "./StarRating";
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface Props {
   show: Show;
   onClose: () => void;
   onUpdate: (show: Show) => void;
+  onDelete: (id: number) => void;
 }
 
-export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
+export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
   const [edited, setEdited] = useState(show);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleSave = () => {
     onUpdate(edited);
     onClose();
   };
 
+  const handleDelete = () => {
+    onDelete(show.id);
+    onClose();
+  };
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -32,15 +38,12 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
           className="absolute inset-0 bg-black/20 backdrop-blur-sm"
           onClick={onClose}
         />
-
-        {/* Modal */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         >
-          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full z-10 transition-colors"
@@ -49,14 +52,11 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
           </button>
 
           <div className="p-8">
-            {/* Top section — poster + info */}
             <div className="flex gap-6 mb-6">
-              {/* Poster placeholder */}
               <div className="w-32 h-48 flex-shrink-0 bg-gradient-to-br from-[#f5e6e8] to-[#e8d5f0] rounded-2xl flex items-center justify-center">
                 <span className="text-5xl">📺</span>
               </div>
 
-              {/* Info */}
               <div className="flex-1">
                 <h2 className="text-2xl mb-3">{edited.title}</h2>
                 <div className="flex flex-wrap gap-2 mb-4">
@@ -65,7 +65,6 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
                 </div>
 
                 <div className="space-y-3">
-                  {/* Rating */}
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">
                       Rating
@@ -76,7 +75,6 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
                     />
                   </div>
 
-                  {/* Type */}
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">
                       Type
@@ -86,7 +84,6 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
                     </p>
                   </div>
 
-                  {/* Status */}
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">
                       Status
@@ -112,7 +109,6 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
                     </select>
                   </div>
 
-                  {/* Current Episode — only for Currently Watching */}
                   {edited.status === "CURRENTLY_WATCHING" && (
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">
@@ -130,7 +126,6 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
                     </div>
                   )}
 
-                  {/* Stopped At — only for Partially Watched */}
                   {edited.status === "PARTIALLY_WATCHED" && (
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">
@@ -151,9 +146,7 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
               </div>
             </div>
 
-            {/* Bottom section */}
             <div className="space-y-4">
-              {/* Keywords */}
               {edited.keywords.length > 0 && (
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">
@@ -173,7 +166,6 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
                 </div>
               )}
 
-              {/* Notes */}
               <div>
                 <label className="block text-sm text-gray-600 mb-2">
                   My Notes
@@ -189,13 +181,12 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
                 />
               </div>
 
-              {/* Favorite toggle */}
-              <div className="flex items-center gap-3">
+              <div>
                 <button
                   onClick={() =>
                     setEdited({ ...edited, is_favorite: !edited.is_favorite })
                   }
-                  className={`px-4 py-2 rounded-full text-sm transition-all border ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all border ${
                     edited.is_favorite
                       ? "bg-[#f5e6e8] text-[#d4a5a5] border-[#d4a5a5]"
                       : "bg-gray-100 text-gray-500 border-gray-200"
@@ -204,19 +195,55 @@ export function DramaDetailModal({ show, onClose, onUpdate }: Props) {
                   {edited.is_favorite ? "❤️ Favorited" : "🤍 Add to Favorites"}
                 </button>
               </div>
+
+              {confirmDelete && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-50 border border-red-200 rounded-2xl p-4"
+                >
+                  <p className="text-sm text-red-600 mb-3">
+                    Are you sure you want to delete{" "}
+                    <strong>{show.title}</strong>? This cannot be undone.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      className="flex-1 px-4 py-2 bg-red-500 text-white rounded-full text-sm hover:bg-red-600 transition-colors"
+                    >
+                      Yes, Delete
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </div>
 
-            {/* Action buttons */}
             <div className="flex gap-3 mt-6 pt-6 border-t border-gray-100">
               <button
+                onClick={() => setConfirmDelete(true)}
+                className="flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-red-50 rounded-full transition-colors"
+              >
+                <Trash2 size={16} />
+                Delete
+              </button>
+
+              <div className="flex-1" />
+
+              <button
                 onClick={onClose}
-                className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 px-6 py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] transition-colors"
+                className="px-6 py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] transition-colors"
               >
                 Save Changes
               </button>

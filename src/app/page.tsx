@@ -105,10 +105,11 @@ export default function Dashboard() {
 
       {selected && (
         <DramaDetailModal
-          show={selected}
-          onClose={() => setSelected(null)}
-          onUpdate={updateShow}
-        />
+  show={selected}
+  onClose={() => setSelected(null)}
+  onUpdate={updateShow}
+  onDelete={(id) => { deleteShow(id); setSelected(null); }}
+/>
       )}
 
       <style>{`.scrollbar-hide::-webkit-scrollbar{display:none}.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}`}</style>

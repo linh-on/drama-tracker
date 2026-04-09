@@ -34,5 +34,10 @@ export function useShows() {
     );
   };
 
-  return { shows, loading, updateShow, refreshShows: fetchShows };
+  const deleteShow = async (id: number) => {
+    await fetch(`/api/shows/${id}`, { method: "DELETE" });
+    setShows((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  return { shows, loading, updateShow, deleteShow, refreshShows: fetchShows };
 }
