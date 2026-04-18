@@ -1,0 +1,89 @@
+import { NextRequest, NextResponse } from "next/server";
+import pool from "@/lib/db";
+
+export async function GET(
+  _: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  try {
+    const result = await pool.query(
+      `SELECT b.*,
+        COALESCE(
+          JSON_AGG(
+            JSON_BUILD_OBJECT('id', k.id, 'code', k.code, 'label', k.label, 'color', k.color)
+          ) FILTER (WHERE k.id IS NOT NULL),
+          '[]'
+        ) AS keywords
+       FROM books b
+       LEFT JOIN book_keywords bk ON bk.book_id = b.id
+       LEFT JOIN keywords k ON k.id = bk.keyword_id
+       WHERE b.id = $1
+       GROUP BY b.id`,
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: "Book not found" }, { status: 404 });
+    }
+    return NextResponse.json(result.rows[0]);
+  } catch (err) {
+    return NextResponse.json({ error: "Failed to fetch book" }, { status: 500 });
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  try {
+    const body = await req.json();
+    const { title, category, status, current_chapter, notes, is_favorite, keywords } = body;
+
+    const result = await pool.query(
+      `UPDATE books
+       SET title=$1, category=$2, status=$3, current_chapter=$4,
+           notes=$5, is_favorite=$6, updated_at=NOW()
+       WHERE id=$7 RETURNING *`,
+      [title, category, status, current_chapter || null, notes || null, is_favorite || false, id]
+    );
+
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: "Book not found" }, { status: 404 });
+    }
+
+    if (keywords !== undefined) {
+      await pool.query("DELETE FROM book_keywords WHERE book_id = $1", [id]);
+      for (const kw of keywords) {
+        const code = typeof kw === 'string' ? kw : kw.code;
+        const kwResult = await pool.query("SELECT id FROM keywords WHERE code = $1", [code]);
+        if (kwResult.rows.length > 0) {
+          await pool.query(
+            "INSERT INTO book_keywords (book_id, keyword_id) VALUES ($1, $2)",
+            [id, kwResult.rows[0].id]
+          );
+        }
+      }
+    }
+
+    return NextResponse.json(result.rows[0]);
+  } catch (err) {
+    return NextResponse.json({ error: "Failed to update book" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  try {
+    const result = await pool.query("DELETE FROM books WHERE id = $1 RETURNING id", [id]);
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: "Book not found" }, { status: 404 });
+    }
+    return NextResponse.json({ message: "Deleted successfully" });
+  } catch (err) {
+    return NextResponse.json({ error: "Failed to delete book" }, { status: 500 });
+  }
+}

@@ -1,7 +1,7 @@
-'use client';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Home, List, Tag } from 'lucide-react';
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, List, Tag, BookOpen } from "lucide-react";
 
 export function Navigation() {
   const pathname = usePathname();
@@ -22,7 +22,9 @@ export function Navigation() {
           <Link
             href="/"
             className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-              pathname === '/' ? 'bg-[#d4a5a5] text-white' : 'hover:bg-gray-50 text-gray-700'
+              pathname === "/"
+                ? "bg-[#d4a5a5] text-white"
+                : "hover:bg-gray-50 text-gray-700"
             }`}
           >
             <Home size={18} />
@@ -32,17 +34,33 @@ export function Navigation() {
           <Link
             href="/list"
             className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-              pathname === '/list' ? 'bg-[#d4a5a5] text-white' : 'hover:bg-gray-50 text-gray-700'
+              pathname === "/list"
+                ? "bg-[#d4a5a5] text-white"
+                : "hover:bg-gray-50 text-gray-700"
             }`}
           >
             <List size={18} />
-            <span className="text-sm">My List</span>
+            <span className="text-sm">Drama & Movie</span>
+          </Link>
+
+          <Link
+            href="/reading"
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+              pathname === "/reading"
+                ? "bg-[#d4a5a5] text-white"
+                : "hover:bg-gray-50 text-gray-700"
+            }`}
+          >
+            <BookOpen size={18} />
+            <span className="text-sm">Reading</span>
           </Link>
 
           <Link
             href="/keywords"
             className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-              pathname === '/keywords' ? 'bg-[#d4a5a5] text-white' : 'hover:bg-gray-50 text-gray-700'
+              pathname === "/keywords"
+                ? "bg-[#d4a5a5] text-white"
+                : "hover:bg-gray-50 text-gray-700"
             }`}
           >
             <Tag size={18} />

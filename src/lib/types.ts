@@ -35,3 +35,24 @@ export interface Show {
   updated_at: string;
   keywords: Keyword[];
 }
+
+export type ReadingStatus =
+  | "READING"
+  | "COMPLETED"
+  | "ON_HOLD"
+  | "PLAN_TO_READ";
+
+export type BookCategory = string;
+
+export interface Book {
+  id: number;
+  title: string;
+  category: BookCategory;
+  status: ReadingStatus;
+  current_chapter: string | null;
+  notes: string | null;
+  is_favorite: boolean;
+  created_at: string;
+  updated_at: string;
+  keywords: Keyword[];
+}
