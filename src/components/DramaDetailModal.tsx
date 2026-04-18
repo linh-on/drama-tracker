@@ -1,11 +1,18 @@
 "use client";
-import { useState } from "react";
-import { Show, WatchStatus } from "@/lib/types";
+import { useState, useEffect } from "react";
+import { Show, WatchStatus, Country, ShowType } from "@/lib/types";
 import { CategoryBadge } from "./CategoryBadge";
 import { StatusTag } from "./StatusTag";
 import { StarRating } from "./StarRating";
 import { X, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+
+interface Keyword {
+  id: number;
+  code: string;
+  label: string;
+  color: string;
+}
 
 interface Props {
   show: Show;
@@ -17,6 +24,15 @@ interface Props {
 export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
   const [edited, setEdited] = useState(show);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [allKeywords, setAllKeywords] = useState<Keyword[]>([]);
+  const [editingTitle, setEditingTitle] = useState(false);
+
+  // Fetch all available keywords
+  useEffect(() => {
+    fetch("/api/keywords")
+      .then((res) => res.json())
+      .then(setAllKeywords);
+  }, []);
 
   const handleSave = () => {
     onUpdate(edited);
@@ -28,9 +44,26 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
     onClose();
   };
 
+  // Toggle a keyword on the show
+  const toggleKeyword = (kw: Keyword) => {
+    const hasKeyword = edited.keywords.some((k) => k.code === kw.code);
+    if (hasKeyword) {
+      setEdited({
+        ...edited,
+        keywords: edited.keywords.filter((k) => k.code !== kw.code),
+      });
+    } else {
+      setEdited({
+        ...edited,
+        keywords: [...edited.keywords, kw],
+      });
+    }
+  };
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -38,6 +71,8 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
           className="absolute inset-0 bg-black/20 backdrop-blur-sm"
           onClick={onClose}
         />
+
+        {/* Modal */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -54,30 +89,77 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
           <div className="p-8">
             {/* Top section */}
             <div className="flex gap-6 mb-6">
-              {/* Poster — real image or emoji fallback */}
+              {/* Poster */}
               <div className="w-36 flex-shrink-0">
                 {edited.poster_url ? (
-                  <img
-                    src={edited.poster_url}
-                    alt={edited.title}
-                    className="w-full rounded-2xl shadow-md"
-                  />
+                  <div className="relative group">
+                    <img
+                      src={edited.poster_url}
+                      alt={edited.title}
+                      className="w-full rounded-2xl shadow-md"
+                    />
+                    <button
+                      onClick={() => setEdited({ ...edited, poster_url: null })}
+                      className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
                 ) : (
                   <div className="w-full h-52 bg-gradient-to-br from-[#f5e6e8] to-[#e8d5f0] rounded-2xl flex items-center justify-center">
                     <span className="text-5xl">📺</span>
                   </div>
                 )}
+                {/* Manual poster URL */}
+                <input
+                  type="text"
+                  value={edited.poster_url ?? ""}
+                  onChange={(e) =>
+                    setEdited({ ...edited, poster_url: e.target.value || null })
+                  }
+                  className="mt-2 w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                  placeholder="Paste poster URL..."
+                />
               </div>
 
               {/* Info */}
               <div className="flex-1">
-                <h2 className="text-2xl mb-3">{edited.title}</h2>
+                {/* Editable title */}
+                <div className="mb-3">
+                  {editingTitle ? (
+                    <input
+                      type="text"
+                      value={edited.title}
+                      onChange={(e) =>
+                        setEdited({ ...edited, title: e.target.value })
+                      }
+                      onBlur={() => setEditingTitle(false)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && setEditingTitle(false)
+                      }
+                      className="w-full text-2xl px-2 py-1 border border-[#d4a5a5] rounded-xl bg-gray-50 outline-none"
+                      autoFocus
+                    />
+                  ) : (
+                    <div className="flex items-start gap-2 group">
+                      <h2 className="text-2xl leading-snug">{edited.title}</h2>
+                      <button
+                        onClick={() => setEditingTitle(true)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400 hover:text-gray-600 mt-1 px-2 py-0.5 bg-gray-100 rounded-full flex-shrink-0"
+                      >
+                        ✏️ edit
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex flex-wrap gap-2 mb-4">
                   <CategoryBadge country={edited.country} />
                   <StatusTag status={edited.status} />
                 </div>
 
                 <div className="space-y-3">
+                  {/* Rating */}
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">
                       Rating
@@ -88,15 +170,56 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                     />
                   </div>
 
+                  {/* Country */}
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">
+                      Country
+                    </label>
+                    <select
+                      value={edited.country}
+                      onChange={(e) =>
+                        setEdited({
+                          ...edited,
+                          country: e.target.value as Country,
+                        })
+                      }
+                      className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm w-full"
+                    >
+                      <option value="KOREAN">Korean</option>
+                      <option value="THAI">Thai</option>
+                      <option value="VIETNAMESE">Vietnamese</option>
+                      <option value="CHINESE_TAIWANESE">
+                        Chinese/Taiwanese
+                      </option>
+                      <option value="JAPANESE">Japanese</option>
+                      <option value="AMERICAN">American</option>
+                    </select>
+                  </div>
+
+                  {/* Type */}
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">
                       Type
                     </label>
-                    <p className="text-sm text-gray-700 capitalize">
-                      {edited.type.toLowerCase().replace("_", " ")}
-                    </p>
+                    <select
+                      value={edited.type}
+                      onChange={(e) =>
+                        setEdited({
+                          ...edited,
+                          type: e.target.value as ShowType,
+                        })
+                      }
+                      className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm w-full"
+                    >
+                      <option value="SERIES">Series</option>
+                      <option value="MOVIE">Movie</option>
+                      <option value="ANIME">Anime</option>
+                      <option value="WEB_DRAMA">Web Drama</option>
+                      <option value="VARIETY">Variety</option>
+                    </select>
                   </div>
 
+                  {/* Status */}
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">
                       Status
@@ -122,6 +245,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                     </select>
                   </div>
 
+                  {/* Current Episode */}
                   {edited.status === "CURRENTLY_WATCHING" && (
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">
@@ -139,6 +263,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                     </div>
                   )}
 
+                  {/* Stopped At */}
                   {edited.status === "PARTIALLY_WATCHED" && (
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">
@@ -160,37 +285,59 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
             </div>
 
             {/* Synopsis */}
-            {edited.synopsis && (
-              <div className="mb-4 p-4 bg-gray-50 rounded-2xl">
-                <label className="block text-sm text-gray-600 mb-2">
-                  Synopsis
-                </label>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {edited.synopsis}
-                </p>
-              </div>
-            )}
+            <div className="mb-4">
+              <label className="block text-sm text-gray-600 mb-2">
+                Synopsis
+              </label>
+              <textarea
+                value={edited.synopsis ?? ""}
+                onChange={(e) =>
+                  setEdited({ ...edited, synopsis: e.target.value || null })
+                }
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm resize-none"
+                rows={3}
+                placeholder="Add a synopsis..."
+              />
+            </div>
 
             <div className="space-y-4">
-              {/* Keywords */}
-              {edited.keywords.length > 0 && (
-                <div>
-                  <label className="block text-sm text-gray-600 mb-2">
-                    Keywords
-                  </label>
+              {/* Keywords — toggle from all available */}
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">
+                  Keywords
+                </label>
+                {allKeywords.length === 0 ? (
+                  <p className="text-xs text-gray-400">
+                    No keywords available. Add some in the Keywords page!
+                  </p>
+                ) : (
                   <div className="flex flex-wrap gap-2">
-                    {edited.keywords.map((kw) => (
-                      <span
-                        key={kw.code}
-                        style={{ color: kw.color, borderColor: kw.color }}
-                        className="px-3 py-1 rounded-full text-xs border bg-gray-50"
-                      >
-                        {kw.label}
-                      </span>
-                    ))}
+                    {allKeywords.map((kw) => {
+                      const isSelected = edited.keywords.some(
+                        (k) => k.code === kw.code,
+                      );
+                      return (
+                        <button
+                          key={kw.code}
+                          onClick={() => toggleKeyword(kw)}
+                          style={
+                            isSelected
+                              ? { backgroundColor: kw.color, color: "white" }
+                              : { color: kw.color, borderColor: kw.color }
+                          }
+                          className={`px-3 py-1 rounded-full text-xs border transition-all ${
+                            isSelected
+                              ? "border-transparent"
+                              : "bg-white hover:opacity-80"
+                          }`}
+                        >
+                          {kw.label} {isSelected && "✓"}
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Notes */}
               <div>

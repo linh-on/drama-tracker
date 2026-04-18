@@ -201,6 +201,39 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                     )}
                   </div>
                 </div>
+                {/* TMDB URL fallback */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Can't find it? Paste TMDB URL
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="tmdb-url"
+                      className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                      placeholder="https://www.themoviedb.org/tv/88328"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const url = (
+                          document.getElementById(
+                            "tmdb-url",
+                          ) as HTMLInputElement
+                        ).value;
+                        if (!url) return;
+                        const res = await fetch(
+                          `/api/tmdb?url=${encodeURIComponent(url)}`,
+                        );
+                        const data = await res.json();
+                        if (data.length > 0) handleSelectResult(data[0]);
+                      }}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm hover:bg-gray-300 transition-colors"
+                    >
+                      Fetch
+                    </button>
+                  </div>
+                </div>
 
                 {/* TMDB Dropdown */}
                 {showDropdown && searchResults.length > 0 && (

@@ -81,14 +81,18 @@ export async function PUT(
 
     if (keywords !== undefined) {
       await pool.query("DELETE FROM show_keywords WHERE show_id = $1", [id]);
-      for (const code of keywords) {
-        const kw = await pool.query("SELECT id FROM keywords WHERE code = $1", [
-          code,
-        ]);
-        if (kw.rows.length > 0) {
+
+      for (const kw of keywords) {
+        // Handle both formats: {code: 'S'} objects OR plain code strings 'S'
+        const code = typeof kw === "string" ? kw : kw.code;
+        const kwResult = await pool.query(
+          "SELECT id FROM keywords WHERE code = $1",
+          [code],
+        );
+        if (kwResult.rows.length > 0) {
           await pool.query(
             "INSERT INTO show_keywords (show_id, keyword_id) VALUES ($1, $2)",
-            [id, kw.rows[0].id],
+            [id, kwResult.rows[0].id],
           );
         }
       }
