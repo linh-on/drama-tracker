@@ -39,7 +39,7 @@ export interface Show {
 export type ReadingStatus =
   | "READING"
   | "COMPLETED"
-  | "ON_HOLD"
+  | "PARTIALLY_READ"
   | "PLAN_TO_READ";
 
 export type BookCategory = string;

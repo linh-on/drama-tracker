@@ -7,12 +7,12 @@ import {
   Heart,
   Plus,
   X,
-  Trash2,
   ChevronDown,
   ChevronUp,
   Settings,
 } from "lucide-react";
-import { StarRating } from "@/components/StarRating";
+import { BookDetailModal } from "@/components/BookDetailModal";
+import { AddBookModal } from "@/components/AddBookModal";
 
 interface Keyword {
   id: number;
@@ -28,7 +28,7 @@ interface Category {
 }
 
 const STATUS_CONFIG: Record<
-  ReadingStatus,
+  string,
   { label: string; color: string; icon: string }
 > = {
   READING: {
@@ -41,8 +41,8 @@ const STATUS_CONFIG: Record<
     color: "bg-[#42a5f5]/10 text-[#1565c0] border-[#42a5f5]/20",
     icon: "✅",
   },
-  ON_HOLD: {
-    label: "On Hold",
+  PARTIALLY_READ: {
+    label: "Partially Read",
     color: "bg-[#ffa726]/10 text-[#e65100] border-[#ffa726]/20",
     icon: "⏸️",
   },
@@ -90,8 +90,6 @@ function ManageCategoriesPanel({
       <h3 className="text-sm font-medium text-gray-700 mb-4">
         Manage Categories
       </h3>
-
-      {/* Add new */}
       <div className="flex gap-2 mb-4">
         <input
           type="text"
@@ -111,8 +109,6 @@ function ManageCategoriesPanel({
         </button>
       </div>
       {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
-
-      {/* Categories list */}
       <div className="flex flex-wrap gap-2">
         {categories.map((cat) => (
           <div
@@ -153,545 +149,6 @@ function ManageCategoriesPanel({
   );
 }
 
-// ─── Book Detail Modal ───────────────────────────────────────────────────────
-function BookDetailModal({
-  book,
-  allKeywords,
-  categories,
-  onClose,
-  onUpdate,
-  onDelete,
-}: {
-  book: Book;
-  allKeywords: Keyword[];
-  categories: Category[];
-  onClose: () => void;
-  onUpdate: (book: Book) => void;
-  onDelete: (id: number) => void;
-}) {
-  const [edited, setEdited] = useState(book);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(false);
-
-  const toggleKeyword = (kw: Keyword) => {
-    const has = edited.keywords.some((k) => k.code === kw.code);
-    setEdited({
-      ...edited,
-      keywords: has
-        ? edited.keywords.filter((k) => k.code !== kw.code)
-        : [...edited.keywords, kw],
-    });
-  };
-
-  const handleSave = () => {
-    onUpdate(edited);
-    onClose();
-  };
-  const handleDelete = () => {
-    onDelete(book.id);
-    onClose();
-  };
-
-  const getCategoryLabel = (code: string) => {
-    return categories.find((c) => c.code === code)?.label || code;
-  };
-
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
-        >
-          <button
-            onClick={onClose}
-            className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full z-10"
-          >
-            <X size={20} />
-          </button>
-
-          <div className="p-8">
-            {/* Editable Title */}
-            <div className="mb-4">
-              {editingTitle ? (
-                <input
-                  type="text"
-                  value={edited.title}
-                  onChange={(e) =>
-                    setEdited({ ...edited, title: e.target.value })
-                  }
-                  onBlur={() => setEditingTitle(false)}
-                  onKeyDown={(e) => e.key === "Enter" && setEditingTitle(false)}
-                  className="w-full text-2xl px-2 py-1 border border-[#d4a5a5] rounded-xl bg-gray-50 outline-none"
-                  autoFocus
-                />
-              ) : (
-                <div className="flex items-start gap-2 group">
-                  <h2 className="text-2xl leading-snug flex-1">
-                    {edited.title}
-                  </h2>
-                  <button
-                    onClick={() => setEditingTitle(true)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400 hover:text-gray-600 mt-1 px-2 py-0.5 bg-gray-100 rounded-full flex-shrink-0"
-                  >
-                    ✏️ edit
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              {/* Category */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Category
-                </label>
-                <select
-                  value={edited.category}
-                  onChange={(e) =>
-                    setEdited({ ...edited, category: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.code} value={cat.code}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Status
-                </label>
-                <select
-                  value={edited.status}
-                  onChange={(e) =>
-                    setEdited({
-                      ...edited,
-                      status: e.target.value as ReadingStatus,
-                    })
-                  }
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                >
-                  <option value="READING">Reading</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="ON_HOLD">On Hold</option>
-                  <option value="PLAN_TO_READ">Plan to Read</option>
-                </select>
-              </div>
-
-              {/* Current Chapter */}
-              {(edited.status === "READING" || edited.status === "ON_HOLD") && (
-                <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    {edited.status === "READING"
-                      ? "Current Chapter"
-                      : "Stopped At"}
-                  </label>
-                  <input
-                    type="text"
-                    value={edited.current_chapter ?? ""}
-                    onChange={(e) =>
-                      setEdited({ ...edited, current_chapter: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                    placeholder="e.g. chapter 12"
-                  />
-                </div>
-              )}
-
-              {/* Keywords */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">
-                  Keywords
-                </label>
-                {allKeywords.length === 0 ? (
-                  <p className="text-xs text-gray-400">
-                    No keywords yet. Add some on the Keywords page!
-                  </p>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {allKeywords.map((kw) => {
-                      const isSelected = edited.keywords.some(
-                        (k) => k.code === kw.code,
-                      );
-                      return (
-                        <button
-                          key={kw.code}
-                          onClick={() => toggleKeyword(kw)}
-                          style={
-                            isSelected
-                              ? { backgroundColor: kw.color, color: "white" }
-                              : { color: kw.color, borderColor: kw.color }
-                          }
-                          className={`px-3 py-1 rounded-full text-xs border transition-all ${isSelected ? "border-transparent" : "bg-white hover:opacity-80"}`}
-                        >
-                          {kw.label} {isSelected && "✓"}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Notes
-                </label>
-                <textarea
-                  value={edited.notes ?? ""}
-                  onChange={(e) =>
-                    setEdited({ ...edited, notes: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm resize-none"
-                  rows={3}
-                  placeholder="Add your thoughts..."
-                />
-              </div>
-
-              {/* Favorite */}
-              <button
-                onClick={() =>
-                  setEdited({ ...edited, is_favorite: !edited.is_favorite })
-                }
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all border ${
-                  edited.is_favorite
-                    ? "bg-[#f5e6e8] text-[#d4a5a5] border-[#d4a5a5]"
-                    : "bg-gray-100 text-gray-500 border-gray-200"
-                }`}
-              >
-                {edited.is_favorite ? "❤️ Favorited" : "🤍 Add to Favorites"}
-              </button>
-
-              {/* Delete confirmation */}
-              {confirmDelete && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border border-red-200 rounded-2xl p-4"
-                >
-                  <p className="text-sm text-red-600 mb-3">
-                    Delete <strong>{book.title}</strong>? This cannot be undone.
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setConfirmDelete(false)}
-                      className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleDelete}
-                      className="flex-1 px-4 py-2 bg-red-500 text-white rounded-full text-sm hover:bg-red-600"
-                    >
-                      Yes, Delete
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 mt-6 pt-6 border-t border-gray-100">
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-red-50 rounded-full transition-colors"
-              >
-                <Trash2 size={16} />
-                Delete
-              </button>
-              <div className="flex-1" />
-              <button
-                onClick={onClose}
-                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-6 py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595]"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
-}
-
-// ─── Add Book Modal ──────────────────────────────────────────────────────────
-function AddBookModal({
-  allKeywords,
-  categories,
-  onClose,
-  onAdd,
-}: {
-  allKeywords: Keyword[];
-  categories: Category[];
-  onClose: () => void;
-  onAdd: () => void;
-}) {
-  const [form, setForm] = useState({
-    title: "",
-    category: categories[0]?.code || "STANDALONE",
-    status: "PLAN_TO_READ" as ReadingStatus,
-    current_chapter: "",
-    notes: "",
-    is_favorite: false,
-    selectedKeywords: [] as string[],
-  });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const toggleKeyword = (code: string) => {
-    setForm((prev) => ({
-      ...prev,
-      selectedKeywords: prev.selectedKeywords.includes(code)
-        ? prev.selectedKeywords.filter((k) => k !== code)
-        : [...prev.selectedKeywords, code],
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (!form.title.trim()) {
-      setError("Title is required");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/books", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: form.title.trim(),
-          category: form.category,
-          status: form.status,
-          current_chapter: form.current_chapter || null,
-          notes: form.notes || null,
-          is_favorite: form.is_favorite,
-          keywords: form.selectedKeywords,
-        }),
-      });
-      if (!res.ok) throw new Error();
-      onAdd();
-      onClose();
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
-        >
-          <button
-            onClick={onClose}
-            className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full z-10"
-          >
-            <X size={20} />
-          </button>
-
-          <div className="p-8">
-            <h2 className="text-2xl mb-6">Add New Story</h2>
-            <div className="space-y-4">
-              {/* Title */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Title <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                  placeholder="Story title..."
-                  autoFocus
-                />
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Category
-                </label>
-                <select
-                  value={form.category}
-                  onChange={(e) =>
-                    setForm({ ...form, category: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.code} value={cat.code}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Status
-                </label>
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      status: e.target.value as ReadingStatus,
-                      current_chapter: "",
-                    })
-                  }
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                >
-                  <option value="READING">Reading</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="ON_HOLD">On Hold</option>
-                  <option value="PLAN_TO_READ">Plan to Read</option>
-                </select>
-              </div>
-
-              {/* Current Chapter */}
-              {(form.status === "READING" || form.status === "ON_HOLD") && (
-                <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    {form.status === "READING"
-                      ? "Current Chapter"
-                      : "Stopped At"}
-                  </label>
-                  <input
-                    type="text"
-                    value={form.current_chapter}
-                    onChange={(e) =>
-                      setForm({ ...form, current_chapter: e.target.value })
-                    }
-                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                    placeholder="e.g. chapter 12"
-                  />
-                </div>
-              )}
-
-              {/* Keywords */}
-              {allKeywords.length > 0 && (
-                <div>
-                  <label className="block text-sm text-gray-600 mb-2">
-                    Keywords
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {allKeywords.map((kw) => {
-                      const isSelected = form.selectedKeywords.includes(
-                        kw.code,
-                      );
-                      return (
-                        <button
-                          key={kw.code}
-                          type="button"
-                          onClick={() => toggleKeyword(kw.code)}
-                          style={
-                            isSelected
-                              ? { backgroundColor: kw.color, color: "white" }
-                              : {}
-                          }
-                          className={`px-3 py-1.5 rounded-full text-xs transition-all border ${
-                            isSelected
-                              ? "border-transparent"
-                              : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
-                          }`}
-                        >
-                          {kw.label} {isSelected && "✓"}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Notes
-                </label>
-                <textarea
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm resize-none"
-                  rows={2}
-                  placeholder="Add your thoughts..."
-                />
-              </div>
-
-              {/* Favorite */}
-              <button
-                type="button"
-                onClick={() =>
-                  setForm({ ...form, is_favorite: !form.is_favorite })
-                }
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all border ${
-                  form.is_favorite
-                    ? "bg-[#f5e6e8] text-[#d4a5a5] border-[#d4a5a5]"
-                    : "bg-gray-100 text-gray-500 border-gray-200"
-                }`}
-              >
-                {form.is_favorite ? "❤️ Favorited" : "🤍 Add to Favorites"}
-              </button>
-
-              {error && <p className="text-red-400 text-sm">{error}</p>}
-            </div>
-
-            <div className="flex gap-3 mt-6 pt-6 border-t border-gray-100">
-              <button
-                onClick={onClose}
-                className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="flex-1 px-6 py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] disabled:opacity-50"
-              >
-                {loading ? "Adding..." : "Add Story"}
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
-}
-
 // ─── Book Card ───────────────────────────────────────────────────────────────
 function BookCard({
   book,
@@ -702,7 +159,11 @@ function BookCard({
   categories: Category[];
   onClick: () => void;
 }) {
-  const status = STATUS_CONFIG[book.status];
+  const status = STATUS_CONFIG[book.status] || {
+    label: book.status,
+    color: "bg-gray-100 text-gray-600 border-gray-200",
+    icon: "📖",
+  };
   const categoryLabel =
     categories.find((c) => c.code === book.category)?.label || book.category;
 
@@ -757,9 +218,7 @@ export default function ReadingPage() {
   const [allKeywords, setAllKeywords] = useState<Keyword[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  const [statusFilter, setStatusFilter] = useState<ReadingStatus | "ALL">(
-    "ALL",
-  );
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
@@ -856,10 +315,10 @@ export default function ReadingPage() {
     selectedKeywords,
   ]);
 
-  const statusFilters: { value: ReadingStatus | "ALL"; label: string }[] = [
+  const statusFilters = [
     { value: "ALL", label: "All" },
     { value: "READING", label: "Reading" },
-    { value: "ON_HOLD", label: "On Hold" },
+    { value: "PARTIALLY_READ", label: "Partially Read" },
     { value: "COMPLETED", label: "Completed" },
     { value: "PLAN_TO_READ", label: "Plan to Read" },
   ];
@@ -885,7 +344,6 @@ export default function ReadingPage() {
             <p className="text-gray-500">{filtered.length} stories</p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Manage Categories toggle */}
             <button
               onClick={() => setShowManageCategories(!showManageCategories)}
               className={`flex items-center gap-2 px-4 py-3 rounded-full transition-colors text-sm ${
@@ -902,8 +360,6 @@ export default function ReadingPage() {
                 <ChevronDown size={14} />
               )}
             </button>
-
-            {/* Add Story */}
             <button
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 px-5 py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] transition-colors shadow-sm"
@@ -914,7 +370,7 @@ export default function ReadingPage() {
           </div>
         </motion.div>
 
-        {/* Manage Categories Panel — collapsible */}
+        {/* Manage Categories Panel */}
         <AnimatePresence>
           {showManageCategories && (
             <motion.div
@@ -934,7 +390,6 @@ export default function ReadingPage() {
 
         {/* Filters */}
         <div className="mb-8 space-y-4">
-          {/* Search */}
           <input
             type="text"
             placeholder="Search titles..."
@@ -943,7 +398,6 @@ export default function ReadingPage() {
             className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50"
           />
 
-          {/* Status */}
           <div className="flex items-center gap-2">
             <Filter size={16} className="text-gray-400" />
             <span className="text-sm text-gray-600">Status</span>
@@ -964,7 +418,6 @@ export default function ReadingPage() {
             ))}
           </div>
 
-          {/* Category */}
           <div className="flex items-center gap-2">
             <Filter size={16} className="text-gray-400" />
             <span className="text-sm text-gray-600">Category</span>
@@ -995,7 +448,6 @@ export default function ReadingPage() {
             ))}
           </div>
 
-          {/* Keywords + Favorites */}
           <div className="flex items-center gap-2">
             <Filter size={16} className="text-gray-400" />
             <span className="text-sm text-gray-600">Keywords</span>
@@ -1020,7 +472,6 @@ export default function ReadingPage() {
               />
               Favorites
             </button>
-
             {allKeywords.map((kw) => {
               const isSelected = selectedKeywords.includes(kw.code);
               return (
@@ -1045,7 +496,6 @@ export default function ReadingPage() {
                 </button>
               );
             })}
-
             {(selectedKeywords.length > 0 || favoritesOnly) && (
               <button
                 onClick={() => {
