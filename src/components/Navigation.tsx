@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, List, Tag, BookOpen } from "lucide-react";
+import { Home, List, Tag, BookOpen, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 export function Navigation() {
   const pathname = usePathname();
@@ -18,7 +19,7 @@ export function Navigation() {
         </div>
 
         {/* Nav links */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <Link
             href="/"
             className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
@@ -40,7 +41,7 @@ export function Navigation() {
             }`}
           >
             <List size={18} />
-            <span className="text-sm">Drama & Movie</span>
+            <span className="text-sm">My List</span>
           </Link>
 
           <Link
@@ -66,6 +67,18 @@ export function Navigation() {
             <Tag size={18} />
             <span className="text-sm">Keywords</span>
           </Link>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-gray-200 mx-1" />
+
+          {/* Sign Out */}
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-gray-500 hover:bg-red-50 hover:text-red-400 transition-all"
+          >
+            <LogOut size={18} />
+            <span className="text-sm">Sign Out</span>
+          </button>
         </div>
       </div>
     </nav>
