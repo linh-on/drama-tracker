@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navigation } from "@/components/Navigation";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "MyEntertainmentTracker",
@@ -15,8 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navigation />
-        {children}
+        <SessionProvider>
+          <Navigation />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

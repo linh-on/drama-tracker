@@ -14,12 +14,12 @@ export async function sendVerificationEmail(
   pin: string,
 ) {
   await transporter.sendMail({
-    from: `"DramaLog" <${process.env.EMAIL_FROM}>`,
+    from: `"DramaTracker" <${process.env.EMAIL_FROM}>`,
     to,
-    subject: "Your DramaLog verification code",
+    subject: "Your DramaTracker verification code",
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2 style="color: #d4a5a5;">Welcome to DramaLog! 📺</h2>
+        <h2 style="color: #d4a5a5;">Welcome to DramaTracker! 📺</h2>
         <p>Hi ${name},</p>
         <p>Thanks for registering! Here is your verification code:</p>
         <div style="background: #f5e6e8; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">

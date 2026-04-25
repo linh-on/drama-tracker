@@ -71,7 +71,7 @@ export default function RegisterPage() {
             <span className="text-white text-2xl">📺</span>
           </div>
           <h1 className="text-2xl tracking-tight">Create Account</h1>
-          <p className="text-gray-400 text-sm mt-1">Join DramaLog</p>
+          <p className="text-gray-400 text-sm mt-1">Join Drama Tracker</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

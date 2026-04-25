@@ -15,7 +15,7 @@ export function Navigation() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4a5a5] to-[#c8a2c8] flex items-center justify-center">
             <span className="text-white text-sm">📺</span>
           </div>
-          <h1 className="text-xl tracking-tight">DramaLog</h1>
+          <h1 className="text-xl tracking-tight">Drama Tracker</h1>
         </div>
 
         {/* Nav links */}

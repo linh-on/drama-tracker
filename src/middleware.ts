@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === "production",
+  });
 
   const isLoggedIn = !!token;
   const path = req.nextUrl.pathname;
@@ -11,6 +15,7 @@ export async function middleware(req: NextRequest) {
     path === "/login" ||
     path === "/register" ||
     path === "/verify" ||
+    path === "/pending" ||
     path.startsWith("/api/auth");
 
   if (isPublicPath) return NextResponse.next();

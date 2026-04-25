@@ -1,16 +1,24 @@
 "use client";
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // When session becomes available, redirect to home
+  useEffect(() => {
+    if (status === "authenticated") {
+      window.location.href = "/";
+    }
+  }, [status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,13 +32,14 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError("Incorrect username or password");
+      setError("Incorrect email or password");
       setLoading(false);
-    } else {
-      router.push("/");
-      router.refresh();
     }
+    // Don't push manually — useEffect handles redirect when session is ready
   };
+
+  // Show nothing while checking session
+  if (status === "loading") return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f5e6e8] to-[#e8d5f0] flex items-center justify-center p-4">
@@ -40,19 +49,22 @@ export default function LoginPage() {
         className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md"
       >
         <div className="flex flex-col items-center mb-8">
-          <p className="text-gray-400 text-xl mt-1">Sign in to your account</p>
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#d4a5a5] to-[#c8a2c8] flex items-center justify-center mb-4 shadow-md">
+            <span className="text-white text-2xl">📺</span>
+          </div>
+          <h1 className="text-3xl tracking-tight">Drama Tracker</h1>
+          <p className="text-gray-400 text-sm mt-1">Sign in to your account</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm text-gray-600 mb-1">Email</label>
             <input
-              type="text"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#d4a5a5] transition-colors"
-              placeholder="Enter your username"
+              placeholder="your@email.com"
               autoFocus
               required
             />
@@ -88,6 +100,7 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
         <p className="text-center text-sm text-gray-400 mt-6">
           Don't have an account?{" "}
           <Link href="/register" className="text-[#d4a5a5] hover:underline">
