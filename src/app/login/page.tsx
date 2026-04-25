@@ -3,10 +3,11 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export default function LoginPage() {
     setError("");
 
     const result = await signIn("credentials", {
-      username,
+      email,
       password,
       redirect: false,
     });
@@ -45,11 +46,11 @@ export default function LoginPage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Username</label>
+            <label className="block text-sm text-gray-600 mb-1">Email</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#d4a5a5] transition-colors"
               placeholder="Enter your username"
               autoFocus
@@ -87,6 +88,12 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+        <p className="text-center text-sm text-gray-400 mt-6">
+          Don't have an account?{" "}
+          <Link href="/register" className="text-[#d4a5a5] hover:underline">
+            Register
+          </Link>
+        </p>
       </motion.div>
     </div>
   );
