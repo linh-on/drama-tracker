@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { auth } from "@/auth";
+
+async function getUserId(): Promise<number | null> {
+  const session = await auth();
+  if (!session?.user?.email) return null;
+  const result = await pool.query("SELECT id FROM users WHERE email = $1", [
+    session.user.email,
+  ]);
+  if (result.rows.length === 0) return null;
+  return result.rows[0].id;
+}
 
 export async function GET(
   _: NextRequest,
@@ -7,6 +18,10 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
+    const userId = await getUserId();
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const result = await pool.query(
       `SELECT s.*,
         COALESCE(
@@ -17,10 +32,10 @@ export async function GET(
         ) AS keywords
        FROM shows s
        LEFT JOIN show_keywords sk ON sk.show_id = s.id
-       LEFT JOIN keywords k ON k.id = sk.keyword_id
-       WHERE s.id = $1
+       LEFT JOIN keywords k ON k.id = sk.keyword_id AND k.user_id = $2
+       WHERE s.id = $1 AND s.user_id = $2
        GROUP BY s.id`,
-      [id],
+      [id, userId],
     );
     if (result.rows.length === 0) {
       return NextResponse.json({ error: "Show not found" }, { status: 404 });
@@ -40,6 +55,10 @@ export async function PUT(
 ) {
   const { id } = await params;
   try {
+    const userId = await getUserId();
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await req.json();
     const {
       title,
@@ -59,7 +78,7 @@ export async function PUT(
       `UPDATE shows
        SET title=$1, country=$2, type=$3, status=$4, current_ep=$5,
            rating=$6, comment=$7, is_favorite=$8, poster_url=$9, synopsis=$10, updated_at=NOW()
-       WHERE id=$11 RETURNING *`,
+       WHERE id=$11 AND user_id=$12 RETURNING *`,
       [
         title,
         country,
@@ -72,6 +91,7 @@ export async function PUT(
         poster_url || null,
         synopsis || null,
         id,
+        userId,
       ],
     );
 
@@ -81,13 +101,11 @@ export async function PUT(
 
     if (keywords !== undefined) {
       await pool.query("DELETE FROM show_keywords WHERE show_id = $1", [id]);
-
       for (const kw of keywords) {
-        // Handle both formats: {code: 'S'} objects OR plain code strings 'S'
         const code = typeof kw === "string" ? kw : kw.code;
         const kwResult = await pool.query(
-          "SELECT id FROM keywords WHERE code = $1",
-          [code],
+          "SELECT id FROM keywords WHERE code = $1 AND user_id = $2",
+          [code, userId],
         );
         if (kwResult.rows.length > 0) {
           await pool.query(
@@ -113,9 +131,13 @@ export async function DELETE(
 ) {
   const { id } = await params;
   try {
+    const userId = await getUserId();
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const result = await pool.query(
-      "DELETE FROM shows WHERE id = $1 RETURNING id",
-      [id],
+      "DELETE FROM shows WHERE id = $1 AND user_id = $2 RETURNING id",
+      [id, userId],
     );
     if (result.rows.length === 0) {
       return NextResponse.json({ error: "Show not found" }, { status: 404 });

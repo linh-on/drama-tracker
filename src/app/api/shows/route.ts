@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { auth } from "@/auth";
+
+async function getUserId(req: NextRequest): Promise<number | null> {
+  const session = await auth();
+  if (!session?.user?.email) return null;
+  const result = await pool.query("SELECT id FROM users WHERE email = $1", [
+    session.user.email,
+  ]);
+  if (result.rows.length === 0) return null;
+  return result.rows[0].id;
+}
 
 export async function GET(req: NextRequest) {
   try {
+    const userId = await getUserId(req);
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { searchParams } = new URL(req.url);
     const country = searchParams.get("country");
     const status = searchParams.get("status");
@@ -12,9 +27,9 @@ export async function GET(req: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "title";
     const order = searchParams.get("order") === "desc" ? "DESC" : "ASC";
 
-    const conditions: string[] = [];
-    const values: any[] = [];
-    let i = 1;
+    const conditions: string[] = ["s.user_id = $1"];
+    const values: any[] = [userId];
+    let i = 2;
 
     if (country) {
       conditions.push(`s.country = $${i++}`);
@@ -36,13 +51,12 @@ export async function GET(req: NextRequest) {
       conditions.push(`EXISTS (
         SELECT 1 FROM show_keywords sk
         JOIN keywords k ON k.id = sk.keyword_id
-        WHERE sk.show_id = s.id AND k.code = $${i++}
+        WHERE sk.show_id = s.id AND k.code = $${i++} AND k.user_id = $1
       )`);
       values.push(keyword);
     }
 
-    const where =
-      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const where = `WHERE ${conditions.join(" AND ")}`;
 
     const validSortCols: Record<string, string> = {
       title: "s.title",
@@ -53,8 +67,7 @@ export async function GET(req: NextRequest) {
     const sortCol = validSortCols[sortBy] || "s.title";
 
     const query = `
-      SELECT
-        s.*,
+      SELECT s.*,
         COALESCE(
           JSON_AGG(
             JSON_BUILD_OBJECT('id', k.id, 'code', k.code, 'label', k.label, 'color', k.color)
@@ -63,7 +76,7 @@ export async function GET(req: NextRequest) {
         ) AS keywords
       FROM shows s
       LEFT JOIN show_keywords sk ON sk.show_id = s.id
-      LEFT JOIN keywords k ON k.id = sk.keyword_id
+      LEFT JOIN keywords k ON k.id = sk.keyword_id AND k.user_id = $1
       ${where}
       GROUP BY s.id
       ORDER BY ${sortCol} ${order}
@@ -81,6 +94,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = await getUserId(req);
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await req.json();
     const {
       title,
@@ -97,9 +114,10 @@ export async function POST(req: NextRequest) {
     } = body;
 
     const result = await pool.query(
-      `INSERT INTO shows (title, country, type, status, current_ep, rating, comment, is_favorite, poster_url, synopsis)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      `INSERT INTO shows (user_id, title, country, type, status, current_ep, rating, comment, is_favorite, poster_url, synopsis)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
       [
+        userId,
         title,
         country,
         type,
@@ -116,14 +134,16 @@ export async function POST(req: NextRequest) {
     const show = result.rows[0];
 
     if (keywords?.length > 0) {
-      for (const code of keywords) {
-        const kw = await pool.query("SELECT id FROM keywords WHERE code = $1", [
-          code,
-        ]);
-        if (kw.rows.length > 0) {
+      for (const kw of keywords) {
+        const code = typeof kw === "string" ? kw : kw.code;
+        const kwResult = await pool.query(
+          "SELECT id FROM keywords WHERE code = $1 AND user_id = $2",
+          [code, userId],
+        );
+        if (kwResult.rows.length > 0) {
           await pool.query(
             "INSERT INTO show_keywords (show_id, keyword_id) VALUES ($1, $2)",
-            [show.id, kw.rows[0].id],
+            [show.id, kwResult.rows[0].id],
           );
         }
       }
