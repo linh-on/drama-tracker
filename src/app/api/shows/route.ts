@@ -113,6 +113,17 @@ export async function POST(req: NextRequest) {
       synopsis,
     } = body;
 
+    const existing = await pool.query(
+      "SELECT id FROM shows WHERE LOWER(title) = LOWER($1) AND user_id = $2",
+      [title, userId],
+    );
+    if (existing.rows.length > 0) {
+      return NextResponse.json(
+        { error: `"${title}" is already in your list!` },
+        { status: 400 },
+      );
+    }
+
     const result = await pool.query(
       `INSERT INTO shows (user_id, title, country, type, status, current_ep, rating, comment, is_favorite, poster_url, synopsis)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,

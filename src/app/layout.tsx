@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navigation } from "@/components/Navigation";
-import { SessionProvider } from "next-auth/react";
+import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: "MyEntertainmentTracker",
@@ -16,10 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SessionProvider>
+        <Providers>
           <Navigation />
           {children}
-        </SessionProvider>
+        </Providers>
       </body>
     </html>
   );

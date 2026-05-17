@@ -37,30 +37,32 @@ export async function POST(req: NextRequest) {
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { label, color } = await req.json();
-    if (!label || !color) {
+    const { label, color, tmdb_keyword_id } = await req.json();
+
+    if (!label || !color || !tmdb_keyword_id) {
       return NextResponse.json(
-        { error: "Label and color are required" },
+        { error: "Label, color and TMDB keyword ID are required" },
         { status: 400 },
       );
     }
 
-    const code = label.trim().toUpperCase().replace(/\s+/g, "_").slice(0, 10);
+    const code = label.trim().toUpperCase().replace(/\s+/g, "_").slice(0, 50);
 
+    // Check if already exists for this user
     const existing = await pool.query(
-      "SELECT id FROM keywords WHERE code = $1 AND user_id = $2",
-      [code, userId],
+      "SELECT id FROM keywords WHERE tmdb_keyword_id = $1 AND user_id = $2",
+      [tmdb_keyword_id, userId],
     );
     if (existing.rows.length > 0) {
       return NextResponse.json(
-        { error: "A keyword with this name already exists" },
+        { error: "You already have this keyword" },
         { status: 400 },
       );
     }
 
     const result = await pool.query(
-      "INSERT INTO keywords (code, label, color, user_id) VALUES ($1, $2, $3, $4) RETURNING *",
-      [code, label.trim(), color, userId],
+      "INSERT INTO keywords (code, label, color, user_id, tmdb_keyword_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [code, label.trim(), color, userId, tmdb_keyword_id],
     );
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (err) {

@@ -57,6 +57,29 @@ export function AddShowModal({ onClose, onAdd }: Props) {
       .then(setKeywords);
   }, []);
 
+  // Check if show already exists
+  const checkDuplicate = async (title: string) => {
+    if (!title.trim()) return;
+    try {
+      const res = await fetch(
+        `/api/shows?search=${encodeURIComponent(title.trim())}`,
+      );
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const exact = data.find(
+          (s: any) => s.title.toLowerCase() === title.toLowerCase().trim(),
+        );
+        if (exact) {
+          setError(`"${title}" is already in your list!`);
+        } else {
+          setError("");
+        }
+      }
+    } catch {
+      // silently fail on duplicate check
+    }
+  };
+
   // Search TMDB as user types
   const handleTitleChange = (value: string) => {
     setForm((prev) => ({
@@ -71,6 +94,7 @@ export function AddShowModal({ onClose, onAdd }: Props) {
     if (value.trim().length < 2) {
       setSearchResults([]);
       setShowDropdown(false);
+      setError("");
       return;
     }
 
@@ -81,6 +105,7 @@ export function AddShowModal({ onClose, onAdd }: Props) {
         const data = await res.json();
         setSearchResults(data);
         setShowDropdown(data.length > 0);
+        await checkDuplicate(value);
       } catch {
         setSearchResults([]);
       } finally {
@@ -100,6 +125,7 @@ export function AddShowModal({ onClose, onAdd }: Props) {
     }));
     setShowDropdown(false);
     setSearchResults([]);
+    checkDuplicate(result.title);
   };
 
   const toggleKeyword = (code: string) => {
@@ -139,7 +165,13 @@ export function AddShowModal({ onClose, onAdd }: Props) {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to add show");
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Something went wrong. Please try again.");
+        setLoading(false);
+        return;
+      }
+
       onAdd();
       onClose();
     } catch (err) {
@@ -163,7 +195,7 @@ export function AddShowModal({ onClose, onAdd }: Props) {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+          className="relative bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
         >
           <button
             onClick={onClose}
@@ -201,8 +233,9 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                     )}
                   </div>
                 </div>
+
                 {/* TMDB URL fallback */}
-                <div>
+                <div className="mt-2">
                   <label className="block text-sm text-gray-600 mb-1">
                     Can't find it? Paste TMDB URL
                   </label>
@@ -244,7 +277,6 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                         onClick={() => handleSelectResult(result)}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
                       >
-                        {/* Mini poster */}
                         {result.poster_url ? (
                           <img
                             src={result.poster_url}
@@ -273,7 +305,7 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                 )}
               </div>
 
-              {/* Poster preview if selected from TMDB */}
+              {/* Poster preview */}
               {form.poster_url && (
                 <div className="flex gap-4 p-3 bg-gray-50 rounded-2xl border border-gray-200">
                   <img
@@ -481,7 +513,16 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                 </button>
               </div>
 
-              {error && <p className="text-red-400 text-sm">{error}</p>}
+              {/* Error */}
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-red-400 text-sm"
+                >
+                  {error}
+                </motion.p>
+              )}
             </div>
 
             <div className="flex gap-3 mt-6 pt-6 border-t border-gray-100">
@@ -493,7 +534,7 @@ export function AddShowModal({ onClose, onAdd }: Props) {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading || !!error}
                 className="flex-1 px-6 py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] transition-colors disabled:opacity-50"
               >
                 {loading ? "Adding..." : "Add Show"}

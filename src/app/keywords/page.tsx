@@ -1,16 +1,22 @@
 "use client";
-import { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { Trash2, Plus } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Search, X, Plus, Tag } from "lucide-react";
 
 interface Keyword {
   id: number;
   code: string;
   label: string;
   color: string;
+  tmdb_keyword_id: number;
 }
 
-const PRESET_COLORS = [
+interface TMDBKeyword {
+  id: number;
+  name: string;
+}
+
+const COLORS = [
   "#ef4444",
   "#f97316",
   "#f59e0b",
@@ -20,39 +26,74 @@ const PRESET_COLORS = [
   "#3b82f6",
   "#8b5cf6",
   "#ec4899",
-  "#d4a5a5",
-  "#6b7280",
-  "#374151",
+  "#f43f5e",
+  "#06b6d4",
+  "#6366f1",
 ];
 
 export default function KeywordsPage() {
   const [keywords, setKeywords] = useState<Keyword[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [label, setLabel] = useState("");
-  const [color, setColor] = useState("#d4a5a5");
+  const [search, setSearch] = useState("");
+  const [tmdbResults, setTmdbResults] = useState<TMDBKeyword[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedKeyword, setSelectedKeyword] = useState<TMDBKeyword | null>(
+    null,
+  );
+  const [selectedColor, setSelectedColor] = useState(COLORS[0]);
   const [error, setError] = useState("");
   const [adding, setAdding] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const fetchKeywords = () => {
+  const fetchKeywords = useCallback(() => {
     fetch("/api/keywords")
       .then((res) => res.json())
-      .then((data) => {
-        setKeywords(data);
-        setLoading(false);
-      });
-  };
+      .then((data) => setKeywords(Array.isArray(data) ? data : []));
+  }, []);
 
   useEffect(() => {
     fetchKeywords();
-  }, []);
+  }, [fetchKeywords]);
 
-  const handleAdd = async () => {
-    if (!label.trim()) {
-      setError("Label is required");
+  // Search TMDB keywords as user types
+  useEffect(() => {
+    if (search.length < 2) {
+      setTmdbResults([]);
+      setShowDropdown(false);
       return;
     }
 
+    const timeout = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(
+          `/api/tmdb-keywords?query=${encodeURIComponent(search)}`,
+        );
+        const data = await res.json();
+        setTmdbResults(data);
+        setShowDropdown(true);
+      } catch {
+        setTmdbResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  const handleSelectTMDB = (kw: TMDBKeyword) => {
+    setSelectedKeyword(kw);
+    setSearch(kw.name);
+    setShowDropdown(false);
+    setError("");
+  };
+
+  const handleAdd = async () => {
+    if (!selectedKeyword) {
+      setError("Please select a keyword from the search results");
+      return;
+    }
     setAdding(true);
     setError("");
 
@@ -60,19 +101,23 @@ export default function KeywordsPage() {
       const res = await fetch("/api/keywords", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: label.trim(), color }),
+        body: JSON.stringify({
+          label: selectedKeyword.name,
+          color: selectedColor,
+          tmdb_keyword_id: selectedKeyword.id,
+        }),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error || "Failed to add keyword");
         return;
       }
 
-      setKeywords((prev) => [...prev, data]);
-      setLabel("");
-      setColor("#d4a5a5");
+      fetchKeywords();
+      setSearch("");
+      setSelectedKeyword(null);
+      setSelectedColor(COLORS[0]);
     } catch {
       setError("Something went wrong");
     } finally {
@@ -81,18 +126,25 @@ export default function KeywordsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      await fetch(`/api/keywords/${id}`, { method: "DELETE" });
-      setKeywords((prev) => prev.filter((k) => k.id !== id));
-      setConfirmDeleteId(null);
-    } catch {
-      setError("Failed to delete keyword");
-    }
+    await fetch(`/api/keywords/${id}`, { method: "DELETE" });
+    setKeywords((prev) => prev.filter((k) => k.id !== id));
+    setConfirmDeleteId(null);
+  };
+
+  const handleColorChange = async (id: number, newColor: string) => {
+    await fetch(`/api/keywords/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ color: newColor }),
+    });
+    setKeywords((prev) =>
+      prev.map((k) => (k.id === id ? { ...k, color: newColor } : k)),
+    );
   };
 
   return (
     <div className="min-h-screen bg-white pt-16">
-      <div className="max-w-2xl mx-auto px-6 py-12">
+      <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -101,169 +153,214 @@ export default function KeywordsPage() {
         >
           <h1 className="text-4xl mb-2">Keywords</h1>
           <p className="text-gray-500">
-            Add and manage keywords to tag your shows
+            Search and add keywords from TMDB to tag your shows and books.
           </p>
         </motion.div>
 
-        {/* Add Keyword Form */}
+        {/* Add Keyword */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-200"
+          className="bg-gray-50 rounded-2xl p-6 mb-8"
         >
-          <h2 className="text-lg mb-4">Add New Keyword</h2>
+          <h2 className="text-lg mb-4">Add Keyword</h2>
 
-          <div className="space-y-4">
-            {/* Label input */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Label</label>
+          {/* Search */}
+          <div className="relative mb-4">
+            <div className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl">
+              <Search size={16} className="text-gray-400 flex-shrink-0" />
               <input
                 type="text"
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
-                placeholder="e.g. Romance, Thriller, Slow Burn..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setSelectedKeyword(null);
+                }}
+                placeholder="Search TMDB keywords... (e.g. romance, school, revenge)"
+                className="flex-1 text-sm outline-none bg-transparent"
               />
+              {searching && (
+                <span className="text-xs text-gray-400">Searching...</span>
+              )}
+              {search && (
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setSelectedKeyword(null);
+                    setShowDropdown(false);
+                  }}
+                >
+                  <X size={14} className="text-gray-400 hover:text-gray-600" />
+                </button>
+              )}
             </div>
 
-            {/* Color picker */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-2">Color</label>
+            {/* Dropdown */}
+            <AnimatePresence>
+              {showDropdown && tmdbResults.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-60 overflow-y-auto"
+                >
+                  {tmdbResults.map((kw) => (
+                    <button
+                      key={kw.id}
+                      onClick={() => handleSelectTMDB(kw)}
+                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    >
+                      <Tag size={14} className="text-gray-400" />
+                      {kw.name}
+                      <span className="ml-auto text-xs text-gray-300">
+                        #{kw.id}
+                      </span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-              {/* Preset colors */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setColor(c)}
-                    className={`w-7 h-7 rounded-full transition-transform hover:scale-110 ${
-                      color === c
-                        ? "ring-2 ring-offset-2 ring-gray-400 scale-110"
-                        : ""
-                    }`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
+          {/* Selected keyword preview */}
+          {selectedKeyword && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mb-4 flex items-center gap-2"
+            >
+              <span className="text-sm text-gray-600">Selected:</span>
+              <span
+                className="px-3 py-1 rounded-full text-sm text-white"
+                style={{ backgroundColor: selectedColor }}
+              >
+                {selectedKeyword.name}
+              </span>
+              <span className="text-xs text-gray-400">
+                TMDB ID: {selectedKeyword.id}
+              </span>
+            </motion.div>
+          )}
 
-              {/* Custom color input */}
-              <div className="flex items-center gap-3">
+          {/* Color picker */}
+          <div className="mb-4">
+            <p className="text-sm text-gray-600 mb-2">Pick a color:</p>
+            <div className="flex flex-wrap gap-2 items-center">
+              {COLORS.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setSelectedColor(color)}
+                  className={`w-8 h-8 rounded-full transition-transform ${
+                    selectedColor === color
+                      ? "scale-125 ring-2 ring-offset-2 ring-gray-400"
+                      : "hover:scale-110"
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+              {/* Custom color picker */}
+              <div className="relative w-8 h-8">
                 <input
                   type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="w-10 h-10 rounded-lg cursor-pointer border border-gray-200"
+                  value={selectedColor}
+                  onChange={(e) => setSelectedColor(e.target.value)}
+                  className="w-8 h-8 rounded-full cursor-pointer border border-gray-200 p-0.5"
+                  title="Pick a custom color"
                 />
-                <span className="text-sm text-gray-500">
-                  or pick a custom color
-                </span>
               </div>
             </div>
-
-            {/* Preview */}
-            {label && (
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">
-                  Preview
-                </label>
-                <span
-                  style={{ backgroundColor: color, color: "white" }}
-                  className="inline-flex items-center px-4 py-2 rounded-full text-sm"
-                >
-                  {label}
-                </span>
-              </div>
-            )}
-
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-
-            <button
-              onClick={handleAdd}
-              disabled={adding}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] transition-colors disabled:opacity-50 text-sm"
-            >
-              <Plus size={16} />
-              {adding ? "Adding..." : "Add Keyword"}
-            </button>
+            <p className="text-md text-gray-400 mt-6">
+              Selected: <span style={{ color: selectedColor }}>■</span>{" "}
+              {selectedColor}
+            </p>
           </div>
+
+          {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
+
+          <button
+            onClick={handleAdd}
+            disabled={adding || !selectedKeyword}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] transition-colors disabled:opacity-50 text-sm"
+          >
+            <Plus size={16} />
+            {adding ? "Adding..." : "Add Keyword"}
+          </button>
         </motion.div>
 
-        {/* Keywords List */}
+        {/* Your Keywords */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-lg mb-4">Your Keywords ({keywords.length})</h2>
+          <h2 className="text-lg mb-4">
+            Your Keywords
+            <span className="ml-2 text-sm text-gray-400 font-normal">
+              ({keywords.length})
+            </span>
+          </h2>
 
-          {loading ? (
-            <p className="text-gray-400">Loading...</p>
-          ) : keywords.length === 0 ? (
-            <p className="text-gray-400">
-              No keywords yet. Add your first one above!
-            </p>
+          {keywords.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              <Tag size={40} className="mx-auto mb-3 opacity-30" />
+              <p>No keywords yet</p>
+              <p className="text-sm mt-1">
+                Search and add keywords from TMDB above!
+              </p>
+            </div>
           ) : (
-            <div className="space-y-2">
+            <div className="flex flex-wrap gap-3">
               {keywords.map((kw) => (
                 <motion.div
                   key={kw.id}
                   layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full text-white text-sm"
+                  style={{ backgroundColor: kw.color }}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-4 h-4 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: kw.color }}
+                  <span>{kw.label}</span>
+
+                  {/* Color change */}
+                  <div className="relative w-4 h-4 flex-shrink-0">
+                    <input
+                      type="color"
+                      value={kw.color}
+                      onChange={(e) => handleColorChange(kw.id, e.target.value)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      title="Change color"
                     />
-                    <span
-                      style={{ color: kw.color }}
-                      className="text-sm font-medium"
-                    >
-                      {kw.label}
+                    <span className="text-white/70 hover:text-white text-xs cursor-pointer select-none">
+                      🎨
                     </span>
-                    <span className="text-xs text-gray-400">({kw.code})</span>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    {/* Preview badge */}
-                    <span
-                      style={{ backgroundColor: kw.color, color: "white" }}
-                      className="px-3 py-1 rounded-full text-xs"
-                    >
-                      {kw.label}
-                    </span>
-
-                    {/* Delete */}
-                    {confirmDeleteId === kw.id ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-red-400">Sure?</span>
-                        <button
-                          onClick={() => handleDelete(kw.id)}
-                          className="text-xs px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                        >
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(null)}
-                          className="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
-                        >
-                          No
-                        </button>
-                      </div>
-                    ) : (
+                  {/* Delete */}
+                  {confirmDeleteId === kw.id ? (
+                    <div className="flex items-center gap-1">
                       <button
-                        onClick={() => setConfirmDeleteId(kw.id)}
-                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-50 rounded-full transition-colors"
+                        onClick={() => handleDelete(kw.id)}
+                        className="text-xs bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded-full"
                       >
-                        <Trash2 size={15} />
+                        Yes
                       </button>
-                    )}
-                  </div>
+                      <button
+                        onClick={() => setConfirmDeleteId(null)}
+                        className="text-xs bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded-full"
+                      >
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDeleteId(kw.id)}
+                      className="hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
                 </motion.div>
               ))}
             </div>

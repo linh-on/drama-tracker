@@ -12,6 +12,30 @@ async function getUserId(): Promise<number | null> {
   return result.rows[0].id;
 }
 
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  try {
+    const userId = await getUserId();
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { color } = await req.json();
+    await pool.query(
+      "UPDATE keywords SET color = $1 WHERE id = $2 AND user_id = $3",
+      [color, id, userId],
+    );
+    return NextResponse.json({ message: "Updated" });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Failed to update keyword" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function DELETE(
   _: NextRequest,
   { params }: { params: Promise<{ id: string }> },
