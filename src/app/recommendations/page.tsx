@@ -35,9 +35,7 @@ interface CountryRecs {
 }
 
 interface Recommendations {
-  [key: string]: CountryRecs;
-  _cached_at?: any;
-  _no_cache?: boolean;
+  [key: string]: CountryRecs | any;
 }
 
 const COUNTRY_ORDER = [
@@ -476,7 +474,8 @@ export default function RecommendationsPage() {
                   {jobStatus}
                 </p>
                 <p className="text-xs text-[#8b5a6b]/70 mt-0.5">
-                  This takes a few minutes. You can browse other pages... Results will appear when ready!
+                  This takes a few minutes. You can browse other pages...
+                  Results will appear when ready!
                 </p>
               </div>
             </motion.div>
