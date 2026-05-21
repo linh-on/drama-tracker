@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, List, Tag, BookOpen, LogOut } from "lucide-react";
+import { Home, List, Tag, BookOpen, Sparkles, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 export function Navigation() {
@@ -33,15 +33,15 @@ export function Navigation() {
           </Link>
 
           <Link
-            href="/list"
+            href="/shows"
             className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-              pathname === "/list"
+              pathname === "/shows"
                 ? "bg-[#d4a5a5] text-white"
                 : "hover:bg-gray-50 text-gray-700"
             }`}
           >
             <List size={18} />
-            <span className="text-sm">My List</span>
+            <span className="text-sm">My Shows</span>
           </Link>
 
           <Link
@@ -66,6 +66,17 @@ export function Navigation() {
           >
             <Tag size={18} />
             <span className="text-sm">Keywords</span>
+          </Link>
+          <Link
+            href="/recommendations"
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+              pathname === "/recommendations"
+                ? "bg-[#d4a5a5] text-white"
+                : "hover:bg-gray-50 text-gray-700"
+            }`}
+          >
+            <Sparkles size={18} />
+            <span className="text-sm">For You</span>
           </Link>
 
           {/* Divider */}

@@ -14,7 +14,7 @@ interface Keyword {
   color: string;
 }
 
-export default function MyList() {
+export default function MoviePage() {
   const { shows, loading, updateShow, deleteShow, refreshShows } = useShows();
   const [selected, setSelected] = useState<Show | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -39,6 +39,8 @@ export default function MyList() {
 
   const filtered = useMemo(() => {
     return shows.filter((s) => {
+      // Exclude Plan to Watch from this page
+      if (s.status === "PLAN_TO_WATCH") return false;
       if (statusFilter !== "ALL" && s.status !== statusFilter) return false;
       if (countryFilter !== "ALL" && s.country !== countryFilter) return false;
       if (search && !s.title.toLowerCase().includes(search.toLowerCase()))
@@ -67,7 +69,6 @@ export default function MyList() {
     { value: "CURRENTLY_WATCHING", label: "Watching" },
     { value: "PARTIALLY_WATCHED", label: "Partially Watched" },
     { value: "COMPLETED", label: "Completed" },
-    { value: "PLAN_TO_WATCH", label: "Plan to Watch" },
   ];
 
   const countryFilters: { value: Country | "ALL"; label: string }[] = [
@@ -83,7 +84,7 @@ export default function MyList() {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-400">Loading your list...</p>
+        <p className="text-gray-400">Loading your shows...</p>
       </div>
     );
 
@@ -97,7 +98,7 @@ export default function MyList() {
           className="flex items-center justify-between mb-8"
         >
           <div>
-            <h1 className="text-4xl mb-3">My List</h1>
+            <h1 className="text-4xl mb-3">My Shows</h1>
             <p className="text-gray-600">{filtered.length} shows</p>
           </div>
           <button
@@ -255,7 +256,6 @@ export default function MyList() {
         )}
       </div>
 
-      {/* Detail Modal */}
       {selected && (
         <DramaDetailModal
           show={selected}
@@ -268,7 +268,6 @@ export default function MyList() {
         />
       )}
 
-      {/* Add Show Modal */}
       {showAddModal && (
         <AddShowModal
           onClose={() => setShowAddModal(false)}

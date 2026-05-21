@@ -5,7 +5,7 @@ import { Show } from "@/lib/types";
 import { DramaCard } from "@/components/DramaCard";
 import { DramaDetailModal } from "@/components/DramaDetailModal";
 import { motion } from "motion/react";
-import { TrendingUp, CheckCircle, Clock } from "lucide-react";
+import { TrendingUp, CheckCircle, Clock, BookmarkPlus } from "lucide-react";
 
 export default function Dashboard() {
   const { shows, loading, updateShow, deleteShow } = useShows();
@@ -40,7 +40,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12"
+          className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12"
         >
           <div className="bg-gradient-to-br from-[#66bb6a]/10 to-[#66bb6a]/5 rounded-2xl p-6 border border-[#66bb6a]/20">
             <div className="flex items-center gap-3">
@@ -77,35 +77,81 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          <div className="bg-gradient-to-br from-[#d4a5a5]/10 to-[#d4a5a5]/5 rounded-2xl p-6 border border-[#d4a5a5]/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#d4a5a5]/20 flex items-center justify-center">
+                <BookmarkPlus size={20} className="text-[#d4a5a5]" />
+              </div>
+              <div>
+                <p className="text-2xl">{shows.length}</p>
+                <p className="text-sm text-gray-600">Total Shows</p>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
         {/* Currently Watching */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2 className="text-xl mb-6">Currently Watching</h2>
-          <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
-            {watching.map((show, i) => (
-              <motion.div
-                key={show.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.1 }}
-              >
-                <DramaCard
-                  show={show}
-                  onClick={() => setSelected(show)}
-                  variant="horizontal"
-                />
-              </motion.div>
-            ))}
-            {watching.length === 0 && (
-              <p className="text-gray-400">Nothing currently watching!</p>
-            )}
+        {watching.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-12"
+          >
+            <h2 className="text-xl mb-6">Currently Watching</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+              {watching.map((show, i) => (
+                <motion.div
+                  key={show.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                >
+                  <DramaCard
+                    show={show}
+                    onClick={() => setSelected(show)}
+                    variant="horizontal"
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Plan to Watch */}
+        {planToWatch.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-12"
+          >
+            <h2 className="text-xl mb-6">Plan to Watch</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+              {planToWatch.map((show, i) => (
+                <motion.div
+                  key={show.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + i * 0.1 }}
+                >
+                  <DramaCard
+                    show={show}
+                    onClick={() => setSelected(show)}
+                    variant="horizontal"
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {watching.length === 0 && planToWatch.length === 0 && (
+          <div className="text-center py-12 text-gray-400">
+            <p>Nothing to show here yet — add some shows to get started!</p>
           </div>
-        </motion.div>
+        )}
       </div>
 
       {selected && (
