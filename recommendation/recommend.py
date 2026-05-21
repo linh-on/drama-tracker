@@ -21,6 +21,20 @@ COUNTRY_NAMES = {
     'AMERICAN':          'American',
 }
 
+def format_show(r):
+    return {
+        'tmdb_id': r['tmdb_id'],
+        'title': r['title'],
+        'overview': r['overview'],
+        'vote_average': r['vote_average'],
+        'vote_count': r['vote_count'],
+        'genres': r['genres'],
+        'poster_url': f"https://image.tmdb.org/t/p/w500{r['poster_path']}" if r['poster_path'] else None,
+        'media_type': r['media_type'],
+        'similarity_score': r['similarity_score'],
+        'hybrid_score': r['hybrid_score'],
+    }
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--user_id', type=int, default=1)
@@ -45,36 +59,24 @@ def main():
         if not candidates:
             continue
 
-        ranked = rank_candidates(candidates, profile, n=TOP_N)
+        top_shows, all_shows = rank_candidates(candidates, profile, n=TOP_N)
 
         all_recommendations[country] = {
             'country': country,
             'country_name': COUNTRY_NAMES.get(country, country),
-            'emoji': COUNTRY_EMOJI.get(country, '🌍'),
-            'shows': [
-                {
-                    'tmdb_id': r['tmdb_id'],
-                    'title': r['title'],
-                    'overview': r['overview'],
-                    'vote_average': r['vote_average'],
-                    'vote_count': r['vote_count'],
-                    'genres': r['genres'],
-                    'poster_url': f"https://image.tmdb.org/t/p/w500{r['poster_path']}" if r['poster_path'] else None,
-                    'media_type': r['media_type'],
-                    'similarity_score': r['similarity_score'],
-                    'hybrid_score': r['hybrid_score'],
-                }
-                for r in ranked
-            ]
+            'emoji': COUNTRY_EMOJI.get(country, ''),
+            'shows': [format_show(r) for r in top_shows],
+            'all_shows': [format_show(r) for r in all_shows],
+            'total': len(all_shows),
         }
 
     if output_json:
         print(json.dumps(all_recommendations))
     else:
         for country, data in all_recommendations.items():
-            print(f"\n{data['emoji']} {data['country_name']}")
+            print(f"\n{data['country_name']} — {data['total']} total candidates")
             for i, show in enumerate(data['shows'], 1):
-                print(f"  {i}. {show['title']} (⭐{show['vote_average']})")
+                print(f"  {i}. {show['title']} ({show['vote_average']})")
 
 if __name__ == "__main__":
     main()

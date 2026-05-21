@@ -53,6 +53,17 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+          <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl p-6 border border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center">
+                <Clock size={20} className="text-gray-600" />
+              </div>
+              <div>
+                <p className="text-2xl">{planToWatch.length}</p>
+                <p className="text-sm text-gray-600">Plan to Watch</p>
+              </div>
+            </div>
+          </div>
 
           <div className="bg-gradient-to-br from-[#42a5f5]/10 to-[#42a5f5]/5 rounded-2xl p-6 border border-[#42a5f5]/20">
             <div className="flex items-center gap-3">
@@ -62,18 +73,6 @@ export default function Dashboard() {
               <div>
                 <p className="text-2xl">{completed.length}</p>
                 <p className="text-sm text-gray-600">Completed</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl p-6 border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center">
-                <Clock size={20} className="text-gray-600" />
-              </div>
-              <div>
-                <p className="text-2xl">{planToWatch.length}</p>
-                <p className="text-sm text-gray-600">Plan to Watch</p>
               </div>
             </div>
           </div>
