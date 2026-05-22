@@ -10,6 +10,8 @@ import {
   Check,
   X,
   ArrowUpDown,
+  ThumbsDown,
+  RotateCcw,
 } from "lucide-react";
 
 interface RecommendedShow {
@@ -23,6 +25,18 @@ interface RecommendedShow {
   media_type: string;
   similarity_score: number;
   hybrid_score: number;
+}
+
+interface DismissedShow {
+  id: number;
+  tmdb_id: number;
+  title: string;
+  poster_url: string | null;
+  country: string;
+  media_type: string;
+  vote_average: number;
+  genres: string;
+  overview: string;
 }
 
 interface CountryRecs {
@@ -62,15 +76,18 @@ function ShowCard({
   index,
   country,
   compact = false,
+  onDismiss,
 }: {
   show: RecommendedShow;
   index: number;
   country: string;
   compact?: boolean;
+  onDismiss?: (show: RecommendedShow) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [added, setAdded] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [dismissing, setDismissing] = useState(false);
 
   const handleAddToList = async () => {
     setAdding(true);
@@ -91,9 +108,32 @@ function ShowCard({
       });
       if (res.ok) setAdded(true);
     } catch {
-      // silently fail
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleDismiss = async () => {
+    setDismissing(true);
+    try {
+      await fetch("/api/recommendations/dismiss", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tmdb_id: show.tmdb_id,
+          title: show.title,
+          poster_url: show.poster_url,
+          country,
+          media_type: show.media_type,
+          vote_average: show.vote_average,
+          genres: show.genres,
+          overview: show.overview,
+        }),
+      });
+      onDismiss?.(show);
+    } catch {
+    } finally {
+      setDismissing(false);
     }
   };
 
@@ -101,6 +141,7 @@ function ShowCard({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
       transition={{ delay: index * 0.03 }}
       className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
     >
@@ -118,9 +159,22 @@ function ShowCard({
         )}
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm leading-snug mb-1">
-            {show.title}
-          </h3>
+          <div className="flex items-start justify-between gap-1">
+            <h3 className="font-medium text-sm leading-snug mb-1 flex-1">
+              {show.title}
+            </h3>
+            {/* Not for me button */}
+            {onDismiss && (
+              <button
+                onClick={handleDismiss}
+                disabled={dismissing}
+                title="Not for me"
+                className="flex-shrink-0 p-1 text-gray-300 hover:text-red-400 transition-colors disabled:opacity-50"
+              >
+                <ThumbsDown size={12} />
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-1 mb-1">
             <Star size={12} className="fill-amber-400 text-amber-400" />
@@ -194,23 +248,97 @@ function ShowCard({
   );
 }
 
+// ─── Dismissed Card ───────────────────────────────────────────────────────────
+function DismissedCard({
+  show,
+  onRestore,
+}: {
+  show: DismissedShow;
+  onRestore: (id: number) => void;
+}) {
+  const [restoring, setRestoring] = useState(false);
+
+  const handleRestore = async () => {
+    setRestoring(true);
+    try {
+      await fetch("/api/recommendations/dismiss", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tmdb_id: show.tmdb_id }),
+      });
+      onRestore(show.tmdb_id);
+    } catch {
+    } finally {
+      setRestoring(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden"
+    >
+      <div className="flex gap-3 p-3">
+        {show.poster_url ? (
+          <img
+            src={show.poster_url}
+            alt={show.title}
+            className="w-12 h-18 object-cover rounded-xl flex-shrink-0 opacity-60"
+          />
+        ) : (
+          <div className="w-12 h-18 bg-gray-200 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-lg opacity-50">📺</span>
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-sm leading-snug text-gray-400 mb-1">
+            {show.title}
+          </h3>
+          {show.genres && (
+            <p className="text-xs text-gray-300 mb-2">{show.genres}</p>
+          )}
+
+          <button
+            onClick={handleRestore}
+            disabled={restoring}
+            className="flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-white border border-gray-200 text-gray-500 hover:border-[#d4a5a5] hover:text-[#d4a5a5] transition-colors disabled:opacity-50"
+          >
+            <RotateCcw size={10} />
+            {restoring ? "Restoring..." : "Add back"}
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── See All Modal ────────────────────────────────────────────────────────────
 function SeeAllModal({
   data,
   onClose,
+  dismissedIds,
+  onDismiss,
 }: {
   data: CountryRecs;
   onClose: () => void;
+  dismissedIds: Set<number>;
+  onDismiss: (show: RecommendedShow) => void;
 }) {
   const [sortBy, setSortBy] = useState<"hybrid" | "similarity" | "rating">(
     "hybrid",
   );
 
-  const sorted = [...(data.all_shows || [])].sort((a, b) => {
-    if (sortBy === "similarity") return b.similarity_score - a.similarity_score;
-    if (sortBy === "rating") return b.vote_average - a.vote_average;
-    return b.hybrid_score - a.hybrid_score;
-  });
+  const sorted = [...(data.all_shows || [])]
+    .filter((s) => !dismissedIds.has(s.tmdb_id))
+    .sort((a, b) => {
+      if (sortBy === "similarity")
+        return b.similarity_score - a.similarity_score;
+      if (sortBy === "rating") return b.vote_average - a.vote_average;
+      return b.hybrid_score - a.hybrid_score;
+    });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -270,6 +398,7 @@ function SeeAllModal({
                 index={i}
                 country={data.country}
                 compact
+                onDismiss={onDismiss}
               />
             ))}
           </div>
@@ -280,9 +409,41 @@ function SeeAllModal({
 }
 
 // ─── Country Section ──────────────────────────────────────────────────────────
-function CountrySection({ data }: { data: CountryRecs }) {
+function CountrySection({
+  data,
+  dismissedIds,
+  onDismiss,
+}: {
+  data: CountryRecs;
+  dismissedIds: Set<number>;
+  onDismiss: (show: RecommendedShow) => void;
+}) {
   const [collapsed, setCollapsed] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [localShows, setLocalShows] = useState<RecommendedShow[]>([]);
+
+  useEffect(() => {
+    // Filter dismissed from all_shows and take top 10
+    const available = data.all_shows.filter(
+      (s) => !dismissedIds.has(s.tmdb_id),
+    );
+    setLocalShows(available.slice(0, 10));
+  }, [data.all_shows, dismissedIds]);
+
+  const handleDismiss = (show: RecommendedShow) => {
+    onDismiss(show);
+    // Immediately refill from all_shows
+    setLocalShows((prev) => {
+      const remaining = prev.filter((s) => s.tmdb_id !== show.tmdb_id);
+      // Find next available show not already shown and not dismissed
+      const shownIds = new Set(remaining.map((s) => s.tmdb_id));
+      shownIds.add(show.tmdb_id);
+      const next = data.all_shows.find(
+        (s) => !shownIds.has(s.tmdb_id) && !dismissedIds.has(s.tmdb_id),
+      );
+      return next ? [...remaining, next] : remaining;
+    });
+  };
 
   return (
     <>
@@ -298,7 +459,7 @@ function CountrySection({ data }: { data: CountryRecs }) {
           >
             <h2 className="text-xl">{data.country_name}</h2>
             <span className="text-sm text-gray-400">
-              {data.shows.length} picks
+              {localShows.length} picks
             </span>
             <div className="text-gray-400 group-hover:text-gray-600 transition-colors">
               {collapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
@@ -322,16 +483,19 @@ function CountrySection({ data }: { data: CountryRecs }) {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                {data.shows.map((show, i) => (
-                  <ShowCard
-                    key={show.tmdb_id}
-                    show={show}
-                    index={i}
-                    country={data.country}
-                  />
-                ))}
-              </div>
+              <AnimatePresence mode="popLayout">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {localShows.map((show, i) => (
+                    <ShowCard
+                      key={show.tmdb_id}
+                      show={show}
+                      index={i}
+                      country={data.country}
+                      onDismiss={handleDismiss}
+                    />
+                  ))}
+                </div>
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
@@ -339,10 +503,71 @@ function CountrySection({ data }: { data: CountryRecs }) {
 
       <AnimatePresence>
         {showAll && (
-          <SeeAllModal data={data} onClose={() => setShowAll(false)} />
+          <SeeAllModal
+            data={data}
+            onClose={() => setShowAll(false)}
+            dismissedIds={dismissedIds}
+            onDismiss={handleDismiss}
+          />
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+// ─── Dismissed Section ────────────────────────────────────────────────────────
+function DismissedSection({
+  dismissed,
+  onRestore,
+}: {
+  dismissed: DismissedShow[];
+  onRestore: (tmdb_id: number) => void;
+}) {
+  const [collapsed, setCollapsed] = useState(true); // collapsed by default
+
+  if (dismissed.length === 0) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="mt-12 pt-8 border-t border-gray-100"
+    >
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="flex items-center gap-3 mb-4 group w-full text-left"
+      >
+        <ThumbsDown size={18} className="text-gray-400" />
+        <h2 className="text-lg text-gray-500">Not For Me</h2>
+        <span className="text-sm text-gray-300">{dismissed.length} shows</span>
+        <div className="ml-auto text-gray-300 group-hover:text-gray-500 transition-colors">
+          {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {!collapsed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              <AnimatePresence mode="popLayout">
+                {dismissed.map((show) => (
+                  <DismissedCard
+                    key={show.tmdb_id}
+                    show={show}
+                    onRestore={onRestore}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
@@ -354,19 +579,31 @@ export default function RecommendationsPage() {
   const [error, setError] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [jobStatus, setJobStatus] = useState<string>("");
+  const [dismissed, setDismissed] = useState<DismissedShow[]>([]);
+  const [dismissedIds, setDismissedIds] = useState<Set<number>>(new Set());
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load cached results on page visit
   const loadCache = async () => {
     try {
-      const res = await fetch("/api/recommendations");
-      const data = await res.json();
-      if (!data._no_cache && !data.error) {
-        setRecs(data);
-        if (data._cached_at) setLastUpdated(new Date(data._cached_at));
+      const [recRes, dismissedRes] = await Promise.all([
+        fetch("/api/recommendations"),
+        fetch("/api/recommendations/dismissed"),
+      ]);
+      const recData = await recRes.json();
+      const dismissedData = await dismissedRes.json();
+
+      if (!recData._no_cache && !recData.error) {
+        setRecs(recData);
+        if (recData._cached_at) setLastUpdated(new Date(recData._cached_at));
+      }
+
+      if (Array.isArray(dismissedData)) {
+        setDismissed(dismissedData);
+        setDismissedIds(
+          new Set(dismissedData.map((d: DismissedShow) => d.tmdb_id)),
+        );
       }
     } catch {
-      // no cache, that's fine
     } finally {
       setLoadingCache(false);
     }
@@ -379,13 +616,11 @@ export default function RecommendationsPage() {
     };
   }, []);
 
-  // Poll for job status
   const startPolling = (jobId: string) => {
     pollRef.current = setInterval(async () => {
       try {
         const res = await fetch(`/api/recommendations/status?jobId=${jobId}`);
         const data = await res.json();
-
         if (data.status === "done") {
           clearInterval(pollRef.current!);
           setGenerating(false);
@@ -399,32 +634,52 @@ export default function RecommendationsPage() {
         } else {
           setJobStatus("Analyzing your taste profile...");
         }
-      } catch {
-        // keep polling
-      }
-    }, 10000); // poll every 10 seconds
+      } catch {}
+    }, 10000);
   };
 
   const handleGenerate = async () => {
     setGenerating(true);
     setError("");
     setJobStatus("Starting...");
-
     try {
       const res = await fetch("/api/recommendations/generate", {
         method: "POST",
       });
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error);
-
       setJobStatus("Analyzing your taste profile...");
       startPolling(data.jobId);
-    } catch (err: any) {
+    } catch {
       setGenerating(false);
       setJobStatus("");
       setError("Failed to start recommendations. Please try again.");
     }
+  };
+
+  const handleDismiss = (show: RecommendedShow) => {
+    const dismissedShow: DismissedShow = {
+      id: 0,
+      tmdb_id: show.tmdb_id,
+      title: show.title,
+      poster_url: show.poster_url,
+      country: "",
+      media_type: show.media_type,
+      vote_average: show.vote_average,
+      genres: show.genres,
+      overview: show.overview,
+    };
+    setDismissed((prev) => [dismissedShow, ...prev]);
+    setDismissedIds((prev) => new Set([...prev, show.tmdb_id]));
+  };
+
+  const handleRestore = (tmdb_id: number) => {
+    setDismissed((prev) => prev.filter((d) => d.tmdb_id !== tmdb_id));
+    setDismissedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(tmdb_id);
+      return next;
+    });
   };
 
   const orderedCountries = COUNTRY_ORDER.filter((c) => recs && recs[c]);
@@ -495,15 +750,15 @@ export default function RecommendationsPage() {
           </div>
         )}
 
-        {/* Loading cache */}
+        {/* Loading */}
         {loadingCache && (
           <div className="flex flex-col items-center justify-center py-32">
-            <div className="w-8 h-8 border-3 border-[#d4a5a5] border-t-transparent rounded-full animate-spin mb-3" />
+            <div className="w-8 h-8 border-2 border-[#d4a5a5] border-t-transparent rounded-full animate-spin mb-3" />
             <p className="text-gray-400 text-sm">Loading...</p>
           </div>
         )}
 
-        {/* No cache yet */}
+        {/* No cache */}
         {!loadingCache && !recs && !generating && !error && (
           <div className="flex flex-col items-center justify-center py-32 text-gray-400">
             <span className="text-5xl mb-4">✨</span>
@@ -528,9 +783,22 @@ export default function RecommendationsPage() {
               </p>
             </div>
           ) : (
-            orderedCountries.map((country) => (
-              <CountrySection key={country} data={recs[country]} />
-            ))
+            <>
+              {orderedCountries.map((country) => (
+                <CountrySection
+                  key={country}
+                  data={recs[country]}
+                  dismissedIds={dismissedIds}
+                  onDismiss={handleDismiss}
+                />
+              ))}
+
+              {/* Dismissed section at bottom */}
+              <DismissedSection
+                dismissed={dismissed}
+                onRestore={handleRestore}
+              />
+            </>
           ))}
       </div>
     </div>
