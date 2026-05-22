@@ -28,7 +28,6 @@ COUNTRY_EMOJI = {
     'AMERICAN':          'US',
 }
 
-# Countries with fewer TMDB shows — use discover only
 DISCOVER_ONLY_COUNTRIES = {'VIETNAMESE', 'CHINESE_TAIWANESE'}
 
 TYPE_TO_TMDB = {
@@ -50,7 +49,6 @@ def get_db_connection():
     return psycopg2.connect(DATABASE_URL)
 
 def get_cached_keywords(tmdb_ids):
-    """Fetch keyword IDs from cache for a list of tmdb_ids"""
     if not tmdb_ids:
         return {}
     try:
@@ -69,7 +67,6 @@ def get_cached_keywords(tmdb_ids):
         return {}
 
 def save_keywords_to_cache(keyword_data):
-    """Save keyword IDs to cache. keyword_data = [(tmdb_id, media_type, [keyword_ids])]"""
     if not keyword_data:
         return
     try:
@@ -79,7 +76,7 @@ def save_keywords_to_cache(keyword_data):
             cur,
             """INSERT INTO tmdb_show_keywords_cache (tmdb_id, media_type, keyword_ids)
                VALUES %s
-               ON CONFLICT (tmdb_id) DO UPDATE 
+               ON CONFLICT (tmdb_id) DO UPDATE
                SET keyword_ids = EXCLUDED.keyword_ids, fetched_at = NOW()""",
             keyword_data
         )
@@ -90,7 +87,6 @@ def save_keywords_to_cache(keyword_data):
         print(f"     Cache write error: {e}")
 
 def fetch_show_keywords_from_tmdb(tmdb_id, media_type="tv"):
-    """Fetch a show's TMDB keyword IDs from TMDB API"""
     try:
         url = f"https://api.themoviedb.org/3/{media_type}/{tmdb_id}/keywords"
         res = requests.get(url, headers=HEADERS)
@@ -101,33 +97,22 @@ def fetch_show_keywords_from_tmdb(tmdb_id, media_type="tv"):
         return set()
 
 def fetch_keywords_batch(candidates):
-    """
-    Fetch keywords for all candidates.
-    Uses cache first, only calls TMDB API for missing ones.
-    """
     tmdb_ids = [c['tmdb_id'] for c in candidates if c['tmdb_id']]
-
-    # Step 1 — Check cache
     cached = get_cached_keywords(tmdb_ids)
     cache_hits = len(cached)
-
-    # Step 2 — Find which ones need API calls
     missing = [c for c in candidates if c['tmdb_id'] and c['tmdb_id'] not in cached]
     print(f"     Keywords: {cache_hits} from cache, {len(missing)} need API calls")
 
-    # Step 3 — Fetch missing from TMDB
     new_cache_data = []
     for c in missing:
         kw_ids = fetch_show_keywords_from_tmdb(c['tmdb_id'], c['media_type'])
         cached[c['tmdb_id']] = kw_ids
         new_cache_data.append((c['tmdb_id'], c['media_type'], list(kw_ids)))
 
-    # Step 4 — Save new data to cache
     if new_cache_data:
         save_keywords_to_cache(new_cache_data)
         print(f"     Saved {len(new_cache_data)} new keyword sets to cache")
 
-    # Step 5 — Attach keywords to candidates
     for c in candidates:
         c['tmdb_keyword_ids'] = cached.get(c['tmdb_id'], set())
 
@@ -219,7 +204,8 @@ def parse_show(show, media_type, country):
         "features": f"{country} {country} {media_type} {media_type} {genres} {genres} {show.get('overview', '')}",
     }
 
-def fetch_candidates(profile, existing_titles):
+def fetch_candidates(profile, existing_titles, dismissed_ids=None):
+    dismissed_ids = dismissed_ids or set()
     country = profile['country']
     origin_country = COUNTRY_TO_TMDB.get(country, '')
     candidates = []
@@ -228,20 +214,17 @@ def fetch_candidates(profile, existing_titles):
         print(f"\n  Discover-only mode for {country}...")
         fav_type = TYPE_TO_TMDB.get(profile['favorite_type'], 'tv')
 
-        # All shows from this country
         country_shows = fetch_discover_by_country(origin_country, fav_type, pages=5)
         print(f"     Found {len(country_shows)} shows from {country}")
         for show in country_shows:
             candidates.append(parse_show(show, fav_type, country))
 
-        # Also fetch movies if favorite type is not movie
         if fav_type != 'movie':
             movie_shows = fetch_discover_by_country(origin_country, 'movie', pages=3)
             print(f"     Found {len(movie_shows)} movies from {country}")
             for show in movie_shows:
                 candidates.append(parse_show(show, 'movie', country))
 
-        # Keyword-based discover
         if profile['keyword_tmdb_ids']:
             kw_shows = fetch_keyword_shows(
                 profile['keyword_tmdb_ids'], origin_country, fav_type, pages=3
@@ -284,13 +267,15 @@ def fetch_candidates(profile, existing_titles):
             seen.add(c['tmdb_id'])
             unique.append(c)
 
-    # Only filter out shows already in your list
+    # Filter out:
+    # 1. Shows already in user's list (by title)
+    # 2. Dismissed shows (by TMDB ID)
     filtered = [
         c for c in unique
         if c['title'].lower().strip() not in existing_titles
+        and c['tmdb_id'] not in dismissed_ids
     ]
 
-    # Fetch keywords using cache (Option C)
     print(f"     Fetching keywords for {len(filtered)} candidates (with cache)...")
     filtered = fetch_keywords_batch(filtered)
 
@@ -301,8 +286,6 @@ if __name__ == "__main__":
     from taste_profile import build_all_profiles
     df, profiles = build_all_profiles()
     existing = set(df['title'].str.lower().str.strip())
-    if 'VIETNAMESE' in profiles:
-        candidates = fetch_candidates(profiles['VIETNAMESE'], existing)
-        print(f"\nFound {len(candidates)} Vietnamese candidates")
-        for c in candidates[:5]:
-            print(f"  - {c['title']} ({c['origin_country']})")
+    if 'KOREAN' in profiles:
+        candidates = fetch_candidates(profiles['KOREAN'], existing)
+        print(f"\nFound {len(candidates)} Korean candidates")

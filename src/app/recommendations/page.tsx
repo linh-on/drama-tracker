@@ -163,7 +163,6 @@ function ShowCard({
             <h3 className="font-medium text-sm leading-snug mb-1 flex-1">
               {show.title}
             </h3>
-            {/* Not for me button */}
             {onDismiss && (
               <button
                 onClick={handleDismiss}
@@ -292,7 +291,6 @@ function DismissedCard({
             <span className="text-lg opacity-50">📺</span>
           </div>
         )}
-
         <div className="flex-1 min-w-0">
           <h3 className="font-medium text-sm leading-snug text-gray-400 mb-1">
             {show.title}
@@ -300,7 +298,6 @@ function DismissedCard({
           {show.genres && (
             <p className="text-xs text-gray-300 mb-2">{show.genres}</p>
           )}
-
           <button
             onClick={handleRestore}
             disabled={restoring}
@@ -332,7 +329,7 @@ function SeeAllModal({
   );
 
   const sorted = [...(data.all_shows || [])]
-    .filter((s) => !dismissedIds.has(s.tmdb_id))
+    .filter((s) => !dismissedIds.has(Number(s.tmdb_id)))
     .sort((a, b) => {
       if (sortBy === "similarity")
         return b.similarity_score - a.similarity_score;
@@ -420,26 +417,31 @@ function CountrySection({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [localShows, setLocalShows] = useState<RecommendedShow[]>([]);
+  const [localShows, setLocalShows] = useState<RecommendedShow[]>(() =>
+    (data.all_shows || data.shows)
+      .filter((s) => !dismissedIds.has(Number(s.tmdb_id)))
+      .slice(0, 10),
+  );
 
   useEffect(() => {
-    // Filter dismissed from all_shows and take top 10
-    const available = data.all_shows.filter(
-      (s) => !dismissedIds.has(s.tmdb_id),
+    setLocalShows(
+      (data.all_shows || data.shows)
+        .filter((s) => !dismissedIds.has(Number(s.tmdb_id)))
+        .slice(0, 10),
     );
-    setLocalShows(available.slice(0, 10));
-  }, [data.all_shows, dismissedIds]);
+  }, [data.all_shows, data.shows, dismissedIds]);
 
   const handleDismiss = (show: RecommendedShow) => {
     onDismiss(show);
-    // Immediately refill from all_shows
     setLocalShows((prev) => {
       const remaining = prev.filter((s) => s.tmdb_id !== show.tmdb_id);
-      // Find next available show not already shown and not dismissed
       const shownIds = new Set(remaining.map((s) => s.tmdb_id));
       shownIds.add(show.tmdb_id);
-      const next = data.all_shows.find(
-        (s) => !shownIds.has(s.tmdb_id) && !dismissedIds.has(s.tmdb_id),
+      const next = (data.all_shows || []).find(
+        (s) =>
+          !shownIds.has(s.tmdb_id) &&
+          !dismissedIds.has(Number(s.tmdb_id)) &&
+          s.tmdb_id !== show.tmdb_id,
       );
       return next ? [...remaining, next] : remaining;
     });
@@ -523,7 +525,7 @@ function DismissedSection({
   dismissed: DismissedShow[];
   onRestore: (tmdb_id: number) => void;
 }) {
-  const [collapsed, setCollapsed] = useState(true); // collapsed by default
+  const [collapsed, setCollapsed] = useState(false); // start expanded
 
   if (dismissed.length === 0) return null;
 
@@ -586,22 +588,23 @@ export default function RecommendationsPage() {
   const loadCache = async () => {
     try {
       const [recRes, dismissedRes] = await Promise.all([
-        fetch("/api/recommendations"),
-        fetch("/api/recommendations/dismissed"),
+        fetch("/api/recommendations", { cache: "no-store" }),
+        fetch("/api/recommendations/dismissed", { cache: "no-store" }),
       ]);
       const recData = await recRes.json();
       const dismissedData = await dismissedRes.json();
 
+      if (Array.isArray(dismissedData)) {
+        const ids = new Set<number>(
+          dismissedData.map((d: DismissedShow) => Number(d.tmdb_id)),
+        );
+        setDismissedIds(ids);
+        setDismissed(dismissedData);
+      }
+
       if (!recData._no_cache && !recData.error) {
         setRecs(recData);
         if (recData._cached_at) setLastUpdated(new Date(recData._cached_at));
-      }
-
-      if (Array.isArray(dismissedData)) {
-        setDismissed(dismissedData);
-        setDismissedIds(
-          new Set(dismissedData.map((d: DismissedShow) => d.tmdb_id)),
-        );
       }
     } catch {
     } finally {
@@ -619,7 +622,9 @@ export default function RecommendationsPage() {
   const startPolling = (jobId: string) => {
     pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`/api/recommendations/status?jobId=${jobId}`);
+        const res = await fetch(`/api/recommendations/status?jobId=${jobId}`, {
+          cache: "no-store",
+        });
         const data = await res.json();
         if (data.status === "done") {
           clearInterval(pollRef.current!);
@@ -670,7 +675,7 @@ export default function RecommendationsPage() {
       overview: show.overview,
     };
     setDismissed((prev) => [dismissedShow, ...prev]);
-    setDismissedIds((prev) => new Set([...prev, show.tmdb_id]));
+    setDismissedIds((prev) => new Set([...prev, Number(show.tmdb_id)]));
   };
 
   const handleRestore = (tmdb_id: number) => {
@@ -729,8 +734,8 @@ export default function RecommendationsPage() {
                   {jobStatus}
                 </p>
                 <p className="text-xs text-[#8b5a6b]/70 mt-0.5">
-                  This takes a few minutes. You can browse other pages...
-                  Results will appear when ready!
+                  This takes a few minutes. You can browse other pages — results
+                  will appear when ready!
                 </p>
               </div>
             </motion.div>
@@ -792,8 +797,6 @@ export default function RecommendationsPage() {
                   onDismiss={handleDismiss}
                 />
               ))}
-
-              {/* Dismissed section at bottom */}
               <DismissedSection
                 dismissed={dismissed}
                 onRestore={handleRestore}

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import pool from "@/lib/db";
 
+export const dynamic = "force-dynamic"; // ← add this
+
 async function getUserId(): Promise<number | null> {
   const session = await auth();
   if (!session?.user?.email) return null;

@@ -1,8 +1,8 @@
 import sys
 import json
 import argparse
-import pandas as pd
-from taste_profile import build_all_profiles
+from sqlalchemy import text
+from taste_profile import build_all_profiles, get_engine
 from tmdb_fetcher import fetch_candidates, COUNTRY_EMOJI
 from ranker import rank_candidates
 from dotenv import load_dotenv
@@ -20,6 +20,22 @@ COUNTRY_NAMES = {
     'JAPANESE':          'Japanese',
     'AMERICAN':          'American',
 }
+
+def get_dismissed(user_id):
+    """Fetch dismissed show tmdb_ids and titles from database"""
+    try:
+        engine = get_engine()
+        with engine.connect() as conn:
+            rows = conn.execute(
+                text(f"SELECT tmdb_id, title FROM recommendation_dismissed WHERE user_id = {user_id}")
+            ).fetchall()
+            dismissed_ids = set(row[0] for row in rows)
+            dismissed_titles = set(row[1].lower().strip() for row in rows if row[1])
+            print(f"Excluding {len(dismissed_ids)} dismissed shows from recommendations")
+            return dismissed_ids, dismissed_titles
+    except Exception as e:
+        print(f"Warning: Could not fetch dismissed shows: {e}")
+        return set(), set()
 
 def format_show(r):
     return {
@@ -44,8 +60,17 @@ def main():
     user_id = args.user_id
     output_json = args.json
 
+    # Build taste profiles
     df, profiles = build_all_profiles(user_id)
+
+    # Get existing titles (already in user's list)
     existing_titles = set(df['title'].str.lower().str.strip())
+
+    # Get dismissed shows — exclude from recommendations forever
+    dismissed_ids, dismissed_titles = get_dismissed(user_id)
+
+    # Merge dismissed titles into existing to filter them out
+    existing_titles = existing_titles | dismissed_titles
 
     all_recommendations = {}
 
@@ -54,7 +79,9 @@ def main():
             continue
 
         profile = profiles[country]
-        candidates = fetch_candidates(profile, existing_titles)
+
+        # Pass dismissed_ids so fetcher can filter by TMDB ID too
+        candidates = fetch_candidates(profile, existing_titles, dismissed_ids)
 
         if not candidates:
             continue
@@ -74,7 +101,7 @@ def main():
         print(json.dumps(all_recommendations))
     else:
         for country, data in all_recommendations.items():
-            print(f"\n{data['country_name']} — {data['total']} total candidates")
+            print(f"\n{data['country_name']} -- {data['total']} total candidates")
             for i, show in enumerate(data['shows'], 1):
                 print(f"  {i}. {show['title']} ({show['vote_average']})")
 
