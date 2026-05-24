@@ -6,14 +6,6 @@ A full-stack solo project featuring multi-user auth, a reading list, TMDB-powere
 
 ---
 
-## Screenshots
-
-![Dashboard](screenshots/dashboard.png)
-![My Shows](screenshots/my-shows.png)
-![Recommendations](screenshots/recommendations.png)
-
----
-
 ## Features
 
 **Show Tracking**
@@ -130,3 +122,12 @@ This started as a simple list tracker and grew into a multi-user platform with a
 - Background job patterns in Node.js
 - TF-IDF vectorization and cosine similarity for content-based filtering
 - Vercel deployment with Neon
+
+---
+
+## Screenshots
+
+![Dashboard](screenshots/dashboard.png)
+![My Shows](screenshots/my-shows.png)
+![Recommendations](screenshots/recommendations.png)
+
