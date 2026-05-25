@@ -53,12 +53,13 @@ export async function POST() {
 
         const recommendations = await pyRes.json();
 
+        const now = new Date().toISOString();
 
         await pool.query(
           `INSERT INTO recommendation_cache (user_id, data, created_at)
-           VALUES ($1, $2, NOW() AT TIME ZONE 'UTC')
-           ON CONFLICT (user_id) DO UPDATE SET data = $2, created_at = NOW() AT TIME ZONE 'UTC'`,
-          [userId, JSON.stringify(recommendations)],
+   VALUES ($1, $2, $3)
+   ON CONFLICT (user_id) DO UPDATE SET data = $2, created_at = $3`,
+          [userId, JSON.stringify(recommendations), now],
         );
         await pool.query(
           "UPDATE recommendation_jobs SET status = 'done', finished_at = NOW() WHERE id = $1",
