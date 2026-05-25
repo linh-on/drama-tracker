@@ -14,6 +14,13 @@ interface Keyword {
   color: string;
 }
 
+type SortOrder =
+  | "NONE"
+  | "RATING_ASC"
+  | "RATING_DESC"
+  | "TITLE_ASC"
+  | "TITLE_DESC";
+
 export default function MoviePage() {
   const { shows, loading, updateShow, deleteShow, refreshShows } = useShows();
   const [selected, setSelected] = useState<Show | null>(null);
@@ -24,6 +31,7 @@ export default function MoviePage() {
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [search, setSearch] = useState("");
   const [keywords, setKeywords] = useState<Keyword[]>([]);
+  const [sortOrder, setSortOrder] = useState<SortOrder>("NONE");
 
   useEffect(() => {
     fetch("/api/keywords")
@@ -38,7 +46,7 @@ export default function MoviePage() {
   };
 
   const filtered = useMemo(() => {
-    return shows.filter((s) => {
+    const list = shows.filter((s) => {
       // Exclude Plan to Watch from this page
       if (s.status === "PLAN_TO_WATCH") return false;
       if (statusFilter !== "ALL" && s.status !== statusFilter) return false;
@@ -55,6 +63,20 @@ export default function MoviePage() {
       }
       return true;
     });
+
+    if (sortOrder === "RATING_DESC") {
+      return [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    }
+    if (sortOrder === "RATING_ASC") {
+      return [...list].sort((a, b) => (a.rating ?? 0) - (b.rating ?? 0));
+    }
+    if (sortOrder === "TITLE_ASC") {
+      return [...list].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    if (sortOrder === "TITLE_DESC") {
+      return [...list].sort((a, b) => b.title.localeCompare(a.title));
+    }
+    return list;
   }, [
     shows,
     statusFilter,
@@ -62,6 +84,7 @@ export default function MoviePage() {
     search,
     selectedKeywords,
     favoritesOnly,
+    sortOrder,
   ]);
 
   const statusFilters: { value: WatchStatus | "ALL"; label: string }[] = [
@@ -112,14 +135,27 @@ export default function MoviePage() {
 
         {/* Filters */}
         <div className="mb-8 space-y-4">
-          {/* Search */}
-          <input
-            type="text"
-            placeholder="Search titles..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50"
-          />
+          {/* Search + Sort */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Search titles..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50"
+            />
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+              className="px-4 py-2 rounded-xl text-sm border bg-gray-50 text-gray-600 border-gray-200"
+            >
+              <option value="NONE">Sort</option>
+              <option value="RATING_DESC">Rating: High → Low</option>
+              <option value="RATING_ASC">Rating: Low → High</option>
+              <option value="TITLE_ASC">Title: A → Z</option>
+              <option value="TITLE_DESC">Title: Z → A</option>
+            </select>
+          </div>
 
           {/* Status */}
           <div className="flex items-center gap-2">
