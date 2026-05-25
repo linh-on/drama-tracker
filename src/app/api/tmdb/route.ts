@@ -8,13 +8,15 @@ export async function GET(req: NextRequest) {
   if (!query && !tmdbUrl) return NextResponse.json([]);
 
   try {
-    // If user pasted a TMDB URL directly
     if (tmdbUrl) {
-      // Extract ID and type from URL e.g. themoviedb.org/tv/88328 or /movie/123
-      const match = tmdbUrl.match(/themoviedb\.org\/(tv|movie)\/(\d+)/);
+      const match = tmdbUrl.match(
+        /themoviedb\.org\/(tv|movie)\/([\d]+)(?:[^/]*)?(?:\/season\/(\d+))?/,
+      );
       if (!match) return NextResponse.json([]);
 
-      const [, mediaType, id] = match;
+      const [, mediaType, id, seasonNumber] = match;
+
+      // Fetch base show
       const res = await fetch(
         `https://api.themoviedb.org/3/${mediaType}/${id}?language=en-US`,
         {
@@ -25,19 +27,38 @@ export async function GET(req: NextRequest) {
         },
       );
       const data = await res.json();
+
+      // Fetch season data if a season number is present
+      let seasonData = null;
+      if (seasonNumber && mediaType === "tv") {
+        const seasonRes = await fetch(
+          `https://api.themoviedb.org/3/tv/${id}/season/${seasonNumber}?language=en-US`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.TMDB_TOKEN}`,
+              accept: "application/json",
+            },
+          },
+        );
+        seasonData = await seasonRes.json();
+      }
+
       return NextResponse.json([
         {
           tmdb_id: data.id,
-          title: data.title || data.name,
-          poster_url: data.poster_path
-            ? `https://image.tmdb.org/t/p/w500${data.poster_path}`
-            : null,
-          synopsis: data.overview || null,
+          title: seasonData?.name || data.title || data.name,
+          poster_url:
+            seasonData?.poster_path || data.poster_path
+              ? `https://image.tmdb.org/t/p/w500${seasonData?.poster_path || data.poster_path}`
+              : null,
+          synopsis: seasonData?.overview || data.overview || null,
           media_type: mediaType,
           year:
+            seasonData?.air_date?.slice(0, 4) ||
             data.release_date?.slice(0, 4) ||
             data.first_air_date?.slice(0, 4) ||
             "",
+          season_number: seasonNumber ? parseInt(seasonNumber) : null,
         },
       ]);
     }
@@ -67,6 +88,7 @@ export async function GET(req: NextRequest) {
         media_type: r.media_type,
         year:
           r.release_date?.slice(0, 4) || r.first_air_date?.slice(0, 4) || "",
+        season_number: null,
       }));
 
     return NextResponse.json(results || []);
