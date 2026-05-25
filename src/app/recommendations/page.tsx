@@ -525,7 +525,7 @@ function DismissedSection({
   dismissed: DismissedShow[];
   onRestore: (tmdb_id: number) => void;
 }) {
-  const [collapsed, setCollapsed] = useState(false); // start expanded
+  const [collapsed, setCollapsed] = useState(false);
 
   if (dismissed.length === 0) return null;
 
@@ -580,10 +580,23 @@ export default function RecommendationsPage() {
   const [loadingCache, setLoadingCache] = useState(true);
   const [error, setError] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [formattedDate, setFormattedDate] = useState("");
   const [jobStatus, setJobStatus] = useState<string>("");
   const [dismissed, setDismissed] = useState<DismissedShow[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<number>>(new Set());
   const pollRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Format date on client only to avoid timezone mismatch with SSR
+  useEffect(() => {
+    if (lastUpdated) {
+      setFormattedDate(
+        lastUpdated.toLocaleString(undefined, {
+          dateStyle: "short",
+          timeStyle: "short",
+        }),
+      );
+    }
+  }, [lastUpdated]);
 
   const loadCache = async () => {
     try {
@@ -604,7 +617,11 @@ export default function RecommendationsPage() {
 
       if (!recData._no_cache && !recData.error) {
         setRecs(recData);
-        if (recData._cached_at) setLastUpdated(new Date(recData._cached_at));
+        if (recData._cached_at) {
+          const raw = recData._cached_at;
+          const utc = raw.endsWith("Z") ? raw : raw + "Z";
+          setLastUpdated(new Date(utc));
+        }
       }
     } catch {
     } finally {
@@ -703,9 +720,9 @@ export default function RecommendationsPage() {
             <p className="text-gray-500">
               Personalized picks based on your taste
             </p>
-            {lastUpdated && !generating && (
+            {formattedDate && !generating && (
               <p className="text-xs text-gray-400 mt-1">
-                Last updated: {lastUpdated.toLocaleString()}
+                Last updated: {formattedDate}
               </p>
             )}
           </div>
