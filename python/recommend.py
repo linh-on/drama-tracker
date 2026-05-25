@@ -7,7 +7,7 @@ from tmdb_fetcher import fetch_candidates, COUNTRY_EMOJI
 from ranker import rank_candidates
 from dotenv import load_dotenv
 
-load_dotenv('../.env.local')
+load_dotenv()
 
 COUNTRIES = ['KOREAN', 'THAI', 'VIETNAMESE', 'CHINESE_TAIWANESE', 'JAPANESE', 'AMERICAN']
 TOP_N = 10
@@ -22,7 +22,6 @@ COUNTRY_NAMES = {
 }
 
 def get_dismissed(user_id):
-    """Fetch dismissed show tmdb_ids and titles from database"""
     try:
         engine = get_engine()
         with engine.connect() as conn:
@@ -51,25 +50,12 @@ def format_show(r):
         'hybrid_score': r['hybrid_score'],
     }
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--user_id', type=int, default=1)
-    parser.add_argument('--json', action='store_true')
-    args = parser.parse_args()
-
-    user_id = args.user_id
-    output_json = args.json
-
-    # Build taste profiles
+def main_logic(user_id: int) -> dict:
+    """Core recommendation logic — callable from Flask or CLI."""
     df, profiles = build_all_profiles(user_id)
 
-    # Get existing titles (already in user's list)
     existing_titles = set(df['title'].str.lower().str.strip())
-
-    # Get dismissed shows — exclude from recommendations forever
     dismissed_ids, dismissed_titles = get_dismissed(user_id)
-
-    # Merge dismissed titles into existing to filter them out
     existing_titles = existing_titles | dismissed_titles
 
     all_recommendations = {}
@@ -79,8 +65,6 @@ def main():
             continue
 
         profile = profiles[country]
-
-        # Pass dismissed_ids so fetcher can filter by TMDB ID too
         candidates = fetch_candidates(profile, existing_titles, dismissed_ids)
 
         if not candidates:
@@ -97,10 +81,20 @@ def main():
             'total': len(all_shows),
         }
 
-    if output_json:
-        print(json.dumps(all_recommendations))
+    return all_recommendations
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--user_id', type=int, default=1)
+    parser.add_argument('--json', action='store_true')
+    args = parser.parse_args()
+
+    result = main_logic(args.user_id)
+
+    if args.json:
+        print(json.dumps(result))
     else:
-        for country, data in all_recommendations.items():
+        for country, data in result.items():
             print(f"\n{data['country_name']} -- {data['total']} total candidates")
             for i, show in enumerate(data['shows'], 1):
                 print(f"  {i}. {show['title']} ({show['vote_average']})")
