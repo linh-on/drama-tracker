@@ -16,7 +16,7 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
     return (
       <motion.div
         whileHover={{ y: -4 }}
-        className="flex-shrink-0 w-[200px] cursor-pointer"
+        className="flex-shrink-0 w-[160px] sm:w-[200px] cursor-pointer"
         onClick={onClick}
       >
         <div className="relative rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
@@ -28,11 +28,13 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-4xl">📺</span>
+              <span className="text-3xl sm:text-4xl">📺</span>
             )}
           </div>
-          <div className="p-3">
-            <h3 className="font-medium text-sm mb-1">{show.title}</h3>
+          <div className="p-2.5 sm:p-3">
+            <h3 className="font-medium text-xs sm:text-sm mb-1 leading-snug line-clamp-2">
+              {show.title}
+            </h3>
             <CategoryBadge country={show.country} />
             {show.current_ep && (
               <p className="text-[10px] text-gray-500 mt-1">
@@ -62,25 +64,27 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <span className="text-5xl">📺</span>
+            <span className="text-4xl sm:text-5xl">📺</span>
           )}
         </div>
 
         {/* Info */}
-        <div className="p-4 space-y-2">
-          <h3 className="font-medium text-sm leading-snug">{show.title}</h3>
+        <div className="p-2.5 sm:p-4 space-y-1.5 sm:space-y-2">
+          <h3 className="font-medium text-xs sm:text-sm leading-snug line-clamp-2">
+            {show.title}
+          </h3>
           <StarRating rating={show.rating} readonly />
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1">
             <CategoryBadge country={show.country} />
             <StatusTag status={show.status} />
           </div>
           {show.keywords.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {show.keywords.slice(0, 3).map((kw) => (
+              {show.keywords.slice(0, 2).map((kw) => (
                 <span
                   key={kw.code}
                   style={{ color: kw.color }}
-                  className="text-xs px-2 py-0.5 rounded-full bg-gray-50 border border-gray-200"
+                  className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-gray-50 border border-gray-200"
                 >
                   {kw.label}
                 </span>
@@ -88,7 +92,7 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
             </div>
           )}
           {show.current_ep && (
-            <p className="text-xs text-gray-400">
+            <p className="text-[10px] sm:text-xs text-gray-400">
               {show.status === "CURRENTLY_WATCHING" ? "▶ " : "⏸ "}
               {show.current_ep}
             </p>

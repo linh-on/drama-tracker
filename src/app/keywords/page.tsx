@@ -55,7 +55,6 @@ export default function KeywordsPage() {
     fetchKeywords();
   }, [fetchKeywords]);
 
-  // Search TMDB keywords as user types
   useEffect(() => {
     if (search.length < 2) {
       setTmdbResults([]);
@@ -143,16 +142,16 @@ export default function KeywordsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-16">
-      <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10"
+          className="mb-8 sm:mb-10"
         >
-          <h1 className="text-4xl mb-2">Keywords</h1>
-          <p className="text-gray-500">
+          <h1 className="text-2xl sm:text-4xl mb-2">Keywords</h1>
+          <p className="text-gray-500 text-sm sm:text-base">
             Search and add keywords from TMDB to tag your shows and books.
           </p>
         </motion.div>
@@ -162,9 +161,9 @@ export default function KeywordsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gray-50 rounded-2xl p-6 mb-8"
+          className="bg-gray-50 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8"
         >
-          <h2 className="text-lg mb-4">Add Keyword</h2>
+          <h2 className="text-base sm:text-lg mb-4">Add Keyword</h2>
 
           {/* Search */}
           <div className="relative mb-4">
@@ -177,11 +176,13 @@ export default function KeywordsPage() {
                   setSearch(e.target.value);
                   setSelectedKeyword(null);
                 }}
-                placeholder="Search TMDB keywords... (e.g. romance, school, revenge)"
-                className="flex-1 text-sm outline-none bg-transparent"
+                placeholder="Search TMDB keywords..."
+                className="flex-1 text-sm outline-none bg-transparent min-w-0"
               />
               {searching && (
-                <span className="text-xs text-gray-400">Searching...</span>
+                <span className="text-xs text-gray-400 shrink-0">
+                  Searching...
+                </span>
               )}
               {search && (
                 <button
@@ -211,9 +212,9 @@ export default function KeywordsPage() {
                       onClick={() => handleSelectTMDB(kw)}
                       className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors"
                     >
-                      <Tag size={14} className="text-gray-400" />
-                      {kw.name}
-                      <span className="ml-auto text-xs text-gray-300">
+                      <Tag size={14} className="text-gray-400 shrink-0" />
+                      <span className="flex-1 truncate">{kw.name}</span>
+                      <span className="text-xs text-gray-300 shrink-0">
                         #{kw.id}
                       </span>
                     </button>
@@ -228,7 +229,7 @@ export default function KeywordsPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mb-4 flex items-center gap-2"
+              className="mb-4 flex items-center gap-2 flex-wrap"
             >
               <span className="text-sm text-gray-600">Selected:</span>
               <span
@@ -251,7 +252,7 @@ export default function KeywordsPage() {
                 <button
                   key={color}
                   onClick={() => setSelectedColor(color)}
-                  className={`w-8 h-8 rounded-full transition-transform ${
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-transform ${
                     selectedColor === color
                       ? "scale-125 ring-2 ring-offset-2 ring-gray-400"
                       : "hover:scale-110"
@@ -260,17 +261,17 @@ export default function KeywordsPage() {
                 />
               ))}
               {/* Custom color picker */}
-              <div className="relative w-8 h-8">
+              <div className="relative w-7 h-7 sm:w-8 sm:h-8">
                 <input
                   type="color"
                   value={selectedColor}
                   onChange={(e) => setSelectedColor(e.target.value)}
-                  className="w-8 h-8 rounded-full cursor-pointer border border-gray-200 p-0.5"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full cursor-pointer border border-gray-200 p-0.5"
                   title="Pick a custom color"
                 />
               </div>
             </div>
-            <p className="text-md text-gray-400 mt-6">
+            <p className="text-sm text-gray-400 mt-3">
               Selected: <span style={{ color: selectedColor }}>■</span>{" "}
               {selectedColor}
             </p>
@@ -294,7 +295,7 @@ export default function KeywordsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-lg mb-4">
+          <h2 className="text-base sm:text-lg mb-4">
             Your Keywords
             <span className="ml-2 text-sm text-gray-400 font-normal">
               ({keywords.length})
@@ -310,7 +311,7 @@ export default function KeywordsPage() {
               </p>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               {keywords.map((kw) => (
                 <motion.div
                   key={kw.id}
@@ -318,7 +319,7 @@ export default function KeywordsPage() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full text-white text-sm"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-white text-sm"
                   style={{ backgroundColor: kw.color }}
                 >
                   <span>{kw.label}</span>

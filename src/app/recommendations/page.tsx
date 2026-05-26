@@ -186,7 +186,7 @@ function ShowCard({
           </div>
 
           {show.genres && (
-            <p className="text-xs text-gray-400 mb-1">{show.genres}</p>
+            <p className="text-xs text-gray-400 mb-1 truncate">{show.genres}</p>
           )}
 
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
@@ -200,8 +200,8 @@ function ShowCard({
                 style={{ width: `${Math.min(show.hybrid_score * 100, 100)}%` }}
               />
             </div>
-            <span className="text-xs text-gray-400">
-              {Math.round(show.hybrid_score * 100)}% match
+            <span className="text-xs text-gray-400 shrink-0">
+              {Math.round(show.hybrid_score * 100)}%
             </span>
           </div>
 
@@ -292,11 +292,11 @@ function DismissedCard({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm leading-snug text-gray-400 mb-1">
+          <h3 className="font-medium text-sm leading-snug text-gray-400 mb-1 truncate">
             {show.title}
           </h3>
           {show.genres && (
-            <p className="text-xs text-gray-300 mb-2">{show.genres}</p>
+            <p className="text-xs text-gray-300 mb-2 truncate">{show.genres}</p>
           )}
           <button
             onClick={handleRestore}
@@ -338,7 +338,7 @@ function SeeAllModal({
     });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -346,35 +346,40 @@ function SeeAllModal({
         onClick={onClose}
       />
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col"
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-5xl max-h-[92vh] sm:max-h-[90vh] flex flex-col"
       >
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        {/* Modal header */}
+        <div className="flex items-start sm:items-center justify-between p-4 sm:p-6 border-b border-gray-100 gap-3">
           <div>
-            <h2 className="text-2xl">{data.country_name} Recommendations</h2>
+            <h2 className="text-lg sm:text-2xl">
+              {data.country_name} Recommendations
+            </h2>
             <p className="text-gray-400 text-sm mt-0.5">
               {sorted.length} shows found
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Sort — icon only on mobile, full on desktop */}
             <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1">
-              <ArrowUpDown size={14} className="text-gray-400 ml-2" />
+              <ArrowUpDown size={14} className="text-gray-400 ml-1.5" />
               {[
-                { value: "hybrid", label: "Best Match" },
-                { value: "similarity", label: "Similarity" },
-                { value: "rating", label: "Rating" },
+                { value: "hybrid", label: "Best", fullLabel: "Best Match" },
+                { value: "similarity", label: "Sim", fullLabel: "Similarity" },
+                { value: "rating", label: "Rating", fullLabel: "Rating" },
               ].map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setSortBy(opt.value as any)}
-                  className={`px-3 py-1.5 rounded-full text-xs transition-all ${
+                  className={`px-2 sm:px-3 py-1.5 rounded-full text-xs transition-all ${
                     sortBy === opt.value
                       ? "bg-[#d4a5a5] text-white"
                       : "text-gray-600 hover:bg-gray-200"
                   }`}
                 >
-                  {opt.label}
+                  <span className="sm:hidden">{opt.label}</span>
+                  <span className="hidden sm:inline">{opt.fullLabel}</span>
                 </button>
               ))}
             </div>
@@ -386,8 +391,8 @@ function SeeAllModal({
             </button>
           </div>
         </div>
-        <div className="overflow-y-auto p-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="overflow-y-auto p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {sorted.map((show, i) => (
               <ShowCard
                 key={show.tmdb_id}
@@ -452,14 +457,14 @@ function CountrySection({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-10"
+        className="mb-8 sm:mb-10"
       >
         <div className="flex items-center gap-3 mb-4">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center gap-3 group flex-1 text-left"
+            className="flex items-center gap-2 sm:gap-3 group flex-1 text-left"
           >
-            <h2 className="text-xl">{data.country_name}</h2>
+            <h2 className="text-lg sm:text-xl">{data.country_name}</h2>
             <span className="text-sm text-gray-400">
               {localShows.length} picks
             </span>
@@ -470,7 +475,7 @@ function CountrySection({
           {data.total > data.shows.length && (
             <button
               onClick={() => setShowAll(true)}
-              className="flex items-center gap-1.5 px-4 py-1.5 text-sm text-[#d4a5a5] border border-[#d4a5a5] rounded-full hover:bg-[#f5e6e8] transition-colors"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-[#d4a5a5] border border-[#d4a5a5] rounded-full hover:bg-[#f5e6e8] transition-colors shrink-0"
             >
               See All ({data.total})
             </button>
@@ -486,7 +491,7 @@ function CountrySection({
               className="overflow-hidden"
             >
               <AnimatePresence mode="popLayout">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                   {localShows.map((show, i) => (
                     <ShowCard
                       key={show.tmdb_id}
@@ -533,14 +538,14 @@ function DismissedSection({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="mt-12 pt-8 border-t border-gray-100"
+      className="mt-10 sm:mt-12 pt-8 border-t border-gray-100"
     >
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="flex items-center gap-3 mb-4 group w-full text-left"
       >
         <ThumbsDown size={18} className="text-gray-400" />
-        <h2 className="text-lg text-gray-500">Not For Me</h2>
+        <h2 className="text-base sm:text-lg text-gray-500">Not For Me</h2>
         <span className="text-sm text-gray-300">{dismissed.length} shows</span>
         <div className="ml-auto text-gray-300 group-hover:text-gray-500 transition-colors">
           {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
@@ -555,7 +560,7 @@ function DismissedSection({
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               <AnimatePresence mode="popLayout">
                 {dismissed.map((show) => (
                   <DismissedCard
@@ -586,7 +591,6 @@ export default function RecommendationsPage() {
   const [dismissedIds, setDismissedIds] = useState<Set<number>>(new Set());
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Format date on client only to avoid timezone mismatch with SSR
   useEffect(() => {
     if (lastUpdated) {
       setFormattedDate(
@@ -707,17 +711,17 @@ export default function RecommendationsPage() {
   const orderedCountries = COUNTRY_ORDER.filter((c) => recs && recs[c]);
 
   return (
-    <div className="min-h-screen bg-white pt-16">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-10"
+          className="flex items-start sm:items-center justify-between mb-8 sm:mb-10 gap-4"
         >
           <div>
-            <h1 className="text-4xl mb-2">For You</h1>
-            <p className="text-gray-500">
+            <h1 className="text-2xl sm:text-4xl mb-1 sm:mb-2">For You</h1>
+            <p className="text-gray-500 text-sm sm:text-base">
               Personalized picks based on your taste
             </p>
             {formattedDate && !generating && (
@@ -729,10 +733,15 @@ export default function RecommendationsPage() {
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="flex items-center gap-2 px-5 py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] transition-colors disabled:opacity-50 text-sm shrink-0"
           >
-            <RefreshCw size={16} className={generating ? "animate-spin" : ""} />
-            {generating ? "Running..." : "Get Recommendations"}
+            <RefreshCw size={15} className={generating ? "animate-spin" : ""} />
+            <span className="hidden sm:inline">
+              {generating ? "Running..." : "Get Recommendations"}
+            </span>
+            <span className="sm:hidden">
+              {generating ? "Running..." : "Refresh"}
+            </span>
           </button>
         </motion.div>
 
@@ -782,11 +791,11 @@ export default function RecommendationsPage() {
 
         {/* No cache */}
         {!loadingCache && !recs && !generating && !error && (
-          <div className="flex flex-col items-center justify-center py-32 text-gray-400">
+          <div className="flex flex-col items-center justify-center py-24 sm:py-32 text-gray-400 text-center px-4">
             <span className="text-5xl mb-4">✨</span>
             <p className="text-lg mb-2">Ready to discover new shows?</p>
             <p className="text-sm">
-              Click "Get Recommendations" to generate your personalized picks!
+              Tap "Refresh" to generate your personalized picks!
             </p>
             <p className="text-xs mt-2 text-gray-300">
               First run takes 5-7 minutes

@@ -59,7 +59,7 @@ export function BookDetailModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -68,20 +68,25 @@ export function BookDetailModal({
           onClick={onClose}
         />
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 40 }}
+          className="relative bg-white rounded-3xl shadow-2xl w-full sm:max-w-lg max-h-[92vh] sm:max-h-[90vh] overflow-y-auto"
         >
+          <div className="sm:hidden flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 bg-gray-200 rounded-full" />
+          </div>
+
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full z-10"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 hover:bg-gray-100 rounded-full z-10"
           >
             <X size={20} />
           </button>
-          <div className="p-8">
+
+          <div className="p-5 sm:p-8">
             {/* Editable Title */}
-            <div className="mb-4">
+            <div className="mb-5 pr-8">
               {editingTitle ? (
                 <input
                   type="text"
@@ -91,65 +96,65 @@ export function BookDetailModal({
                   }
                   onBlur={() => setEditingTitle(false)}
                   onKeyDown={(e) => e.key === "Enter" && setEditingTitle(false)}
-                  className="w-full text-2xl px-2 py-1 border border-[#d4a5a5] rounded-xl bg-gray-50 outline-none"
+                  className="w-full text-xl sm:text-2xl px-2 py-1 border border-[#d4a5a5] rounded-xl bg-gray-50 outline-none"
                   autoFocus
                 />
               ) : (
                 <div className="flex items-start gap-2 group">
-                  <h2 className="text-2xl leading-snug flex-1">
+                  <h2 className="text-xl sm:text-2xl leading-snug flex-1">
                     {edited.title}
                   </h2>
                   <button
                     onClick={() => setEditingTitle(true)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400 hover:text-gray-600 mt-1 px-2 py-0.5 bg-gray-100 rounded-full flex-shrink-0"
+                    className="text-xs text-gray-400 hover:text-gray-600 mt-1 px-2 py-0.5 bg-gray-100 rounded-full flex-shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                   >
-                    ✏️ edit
+                    ✏️
                   </button>
                 </div>
               )}
             </div>
 
             <div className="space-y-4">
-              {/* Category */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Category
-                </label>
-                <select
-                  value={edited.category}
-                  onChange={(e) =>
-                    setEdited({ ...edited, category: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.code} value={cat.code}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Status
-                </label>
-                <select
-                  value={edited.status}
-                  onChange={(e) =>
-                    setEdited({
-                      ...edited,
-                      status: e.target.value as ReadingStatus,
-                    })
-                  }
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                >
-                  <option value="READING">Reading</option>
-                  <option value="PARTIALLY_READ">Partially Read</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="PLAN_TO_READ">Plan to Read</option>
-                </select>
+              {/* Category + Status */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={edited.category}
+                    onChange={(e) =>
+                      setEdited({ ...edited, category: e.target.value })
+                    }
+                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat.code} value={cat.code}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={edited.status}
+                    onChange={(e) =>
+                      setEdited({
+                        ...edited,
+                        status: e.target.value as ReadingStatus,
+                      })
+                    }
+                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                  >
+                    <option value="READING">Reading</option>
+                    <option value="PARTIALLY_READ">Partially Read</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="PLAN_TO_READ">Plan to Read</option>
+                  </select>
+                </div>
               </div>
 
               {/* Current Chapter */}
@@ -167,7 +172,7 @@ export function BookDetailModal({
                     onChange={(e) =>
                       setEdited({ ...edited, current_chapter: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
                     placeholder="e.g. chapter 12"
                   />
                 </div>
@@ -183,7 +188,7 @@ export function BookDetailModal({
                     No keywords yet. Add some on the Keywords page!
                   </p>
                 ) : (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {allKeywords.map((kw) => {
                       const isSelected = edited.keywords.some(
                         (k) => k.code === kw.code,
@@ -197,7 +202,11 @@ export function BookDetailModal({
                               ? { backgroundColor: kw.color, color: "white" }
                               : { color: kw.color, borderColor: kw.color }
                           }
-                          className={`px-3 py-1 rounded-full text-xs border transition-all ${isSelected ? "border-transparent" : "bg-white hover:opacity-80"}`}
+                          className={`px-2.5 py-1 rounded-full text-xs border transition-all ${
+                            isSelected
+                              ? "border-transparent"
+                              : "bg-white hover:opacity-80"
+                          }`}
                         >
                           {kw.label} {isSelected && "✓"}
                         </button>
@@ -272,18 +281,18 @@ export function BookDetailModal({
                 className="flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-red-50 rounded-full transition-colors"
               >
                 <Trash2 size={16} />
-                Delete
+                <span className="hidden sm:inline">Delete</span>
               </button>
               <div className="flex-1" />
               <button
                 onClick={onClose}
-                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                className="px-4 sm:px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="px-6 py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595]"
+                className="px-4 sm:px-6 py-3 bg-[#d4a5a5] text-white rounded-full hover:bg-[#c89595] text-sm"
               >
                 Save
               </button>
