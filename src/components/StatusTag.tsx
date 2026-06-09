@@ -6,22 +6,26 @@ const statusConfig: Record<
 > = {
   CURRENTLY_WATCHING: {
     label: "Watching",
-    color: "bg-[#66bb6a]/10 text-[#2e7d32] border-[#66bb6a]/20",
+    color:
+      "bg-[#66bb6a]/10 text-[#2e7d32] border-[#66bb6a]/20 dark:bg-[#66bb6a]/20 dark:text-[#81c784] dark:border-[#66bb6a]/30",
     icon: "🟢",
   },
   PARTIALLY_WATCHED: {
     label: "Partially Watched",
-    color: "bg-[#ffa726]/10 text-[#e65100] border-[#ffa726]/20",
+    color:
+      "bg-[#ffa726]/10 text-[#e65100] border-[#ffa726]/20 dark:bg-[#ffa726]/20 dark:text-[#ffb74d] dark:border-[#ffa726]/30",
     icon: "⏸️",
   },
   COMPLETED: {
     label: "Completed",
-    color: "bg-[#42a5f5]/10 text-[#1565c0] border-[#42a5f5]/20",
+    color:
+      "bg-[#42a5f5]/10 text-[#1565c0] border-[#42a5f5]/20 dark:bg-[#42a5f5]/20 dark:text-[#64b5f6] dark:border-[#42a5f5]/30",
     icon: "✅",
   },
   PLAN_TO_WATCH: {
     label: "Plan to Watch",
-    color: "bg-gray-100 text-gray-600 border-gray-200",
+    color:
+      "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700",
     icon: "🕐",
   },
 };

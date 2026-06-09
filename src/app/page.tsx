@@ -23,7 +23,7 @@ export default function Dashboard() {
     );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Welcome */}
         <motion.div
@@ -32,7 +32,7 @@ export default function Dashboard() {
           className="mb-8 sm:mb-12"
         >
           <h1 className="text-2xl sm:text-4xl mb-2">Welcome back! 👋</h1>
-          <p className="text-gray-600 text-sm sm:text-base">
+          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
             Here's your drama journey at a glance
           </p>
         </motion.div>
@@ -47,23 +47,23 @@ export default function Dashboard() {
           <div className="bg-gradient-to-br from-[#66bb6a]/10 to-[#66bb6a]/5 rounded-2xl p-4 sm:p-6 border border-[#66bb6a]/20">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#66bb6a]/20 flex items-center justify-center shrink-0">
-                <TrendingUp size={18} className="text-[#2e7d32]" />
+                <TrendingUp size={18} className="text-[#2e7d32] dark:text-[#81c784]" />
               </div>
               <div>
                 <p className="text-xl sm:text-2xl">{watching.length}</p>
-                <p className="text-xs sm:text-sm text-gray-600">Watching</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Watching</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl p-4 sm:p-6 border border-gray-200">
+          <div className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-200 flex items-center justify-center shrink-0">
-                <Clock size={18} className="text-gray-600" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
+                <Clock size={18} className="text-gray-600 dark:text-gray-400" />
               </div>
               <div>
                 <p className="text-xl sm:text-2xl">{planToWatch.length}</p>
-                <p className="text-xs sm:text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   Plan to Watch
                 </p>
               </div>
@@ -73,11 +73,11 @@ export default function Dashboard() {
           <div className="bg-gradient-to-br from-[#42a5f5]/10 to-[#42a5f5]/5 rounded-2xl p-4 sm:p-6 border border-[#42a5f5]/20">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#42a5f5]/20 flex items-center justify-center shrink-0">
-                <CheckCircle size={18} className="text-[#1565c0]" />
+                <CheckCircle size={18} className="text-[#1565c0] dark:text-[#64b5f6]" />
               </div>
               <div>
                 <p className="text-xl sm:text-2xl">{completed.length}</p>
-                <p className="text-xs sm:text-sm text-gray-600">Completed</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Completed</p>
               </div>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl">{shows.length}</p>
-                <p className="text-xs sm:text-sm text-gray-600">Total Shows</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Shows</p>
               </div>
             </div>
           </div>
@@ -154,7 +154,7 @@ export default function Dashboard() {
         )}
 
         {watching.length === 0 && planToWatch.length === 0 && (
-          <div className="text-center py-12 text-gray-400">
+          <div className="text-center py-12 text-gray-400 dark:text-gray-500">
             <p>Nothing to show here yet — add some shows to get started!</p>
           </div>
         )}

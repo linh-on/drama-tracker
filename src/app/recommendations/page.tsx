@@ -143,7 +143,7 @@ function ShowCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ delay: index * 0.03 }}
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+      className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
     >
       <div className="flex gap-3 p-3">
         {show.poster_url ? (
@@ -153,7 +153,7 @@ function ShowCard({
             className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
           />
         ) : (
-          <div className="w-16 h-24 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-24 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
             <span className="text-2xl">📺</span>
           </div>
         )}
@@ -168,7 +168,7 @@ function ShowCard({
                 onClick={handleDismiss}
                 disabled={dismissing}
                 title="Not for me"
-                className="flex-shrink-0 p-1 text-gray-300 hover:text-red-400 transition-colors disabled:opacity-50"
+                className="flex-shrink-0 p-1 text-gray-300 dark:text-gray-600 hover:text-red-400 transition-colors disabled:opacity-50"
               >
                 <ThumbsDown size={12} />
               </button>
@@ -177,30 +177,30 @@ function ShowCard({
 
           <div className="flex items-center gap-1 mb-1">
             <Star size={12} className="fill-amber-400 text-amber-400" />
-            <span className="text-xs text-gray-600">
+            <span className="text-xs text-gray-600 dark:text-gray-400">
               {show.vote_average.toFixed(1)}
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-400 dark:text-gray-500">
               ({show.vote_count.toLocaleString()})
             </span>
           </div>
 
           {show.genres && (
-            <p className="text-xs text-gray-400 mb-1 truncate">{show.genres}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-1 truncate">{show.genres}</p>
           )}
 
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
             {show.media_type === "movie" ? "🎬 Movie" : "📺 Series"}
           </span>
 
           <div className="mt-1.5 flex items-center gap-1">
-            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-[#d4a5a5] rounded-full"
                 style={{ width: `${Math.min(show.hybrid_score * 100, 100)}%` }}
               />
             </div>
-            <span className="text-xs text-gray-400 shrink-0">
+            <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
               {Math.round(show.hybrid_score * 100)}%
             </span>
           </div>
@@ -224,7 +224,7 @@ function ShowCard({
         <div className="px-3 pb-3">
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             {expanded ? "Less" : "More info"}
@@ -235,7 +235,7 @@ function ShowCard({
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="text-xs text-gray-500 mt-1 leading-relaxed overflow-hidden"
+                className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed overflow-hidden"
               >
                 {show.overview}
               </motion.p>
@@ -277,7 +277,7 @@ function DismissedCard({
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden"
+      className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
       <div className="flex gap-3 p-3">
         {show.poster_url ? (
@@ -287,21 +287,21 @@ function DismissedCard({
             className="w-12 h-18 object-cover rounded-xl flex-shrink-0 opacity-60"
           />
         ) : (
-          <div className="w-12 h-18 bg-gray-200 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-18 bg-gray-200 dark:bg-gray-700 rounded-xl flex items-center justify-center flex-shrink-0">
             <span className="text-lg opacity-50">📺</span>
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm leading-snug text-gray-400 mb-1 truncate">
+          <h3 className="font-medium text-sm leading-snug text-gray-400 dark:text-gray-500 mb-1 truncate">
             {show.title}
           </h3>
           {show.genres && (
-            <p className="text-xs text-gray-300 mb-2 truncate">{show.genres}</p>
+            <p className="text-xs text-gray-300 dark:text-gray-600 mb-2 truncate">{show.genres}</p>
           )}
           <button
             onClick={handleRestore}
             disabled={restoring}
-            className="flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-white border border-gray-200 text-gray-500 hover:border-[#d4a5a5] hover:text-[#d4a5a5] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-[#d4a5a5] hover:text-[#d4a5a5] transition-colors disabled:opacity-50"
           >
             <RotateCcw size={10} />
             {restoring ? "Restoring..." : "Add back"}
@@ -348,22 +348,22 @@ function SeeAllModal({
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-5xl max-h-[92vh] sm:max-h-[90vh] flex flex-col"
+        className="relative bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-5xl max-h-[92vh] sm:max-h-[90vh] flex flex-col"
       >
         {/* Modal header */}
-        <div className="flex items-start sm:items-center justify-between p-4 sm:p-6 border-b border-gray-100 gap-3">
+        <div className="flex items-start sm:items-center justify-between p-4 sm:p-6 border-b border-gray-100 dark:border-gray-800 gap-3">
           <div>
             <h2 className="text-lg sm:text-2xl">
               {data.country_name} Recommendations
             </h2>
-            <p className="text-gray-400 text-sm mt-0.5">
+            <p className="text-gray-400 dark:text-gray-500 text-sm mt-0.5">
               {sorted.length} shows found
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {/* Sort — icon only on mobile, full on desktop */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1">
-              <ArrowUpDown size={14} className="text-gray-400 ml-1.5" />
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-full p-1">
+              <ArrowUpDown size={14} className="text-gray-400 dark:text-gray-500 ml-1.5" />
               {[
                 { value: "hybrid", label: "Best", fullLabel: "Best Match" },
                 { value: "similarity", label: "Sim", fullLabel: "Similarity" },
@@ -375,7 +375,7 @@ function SeeAllModal({
                   className={`px-2 sm:px-3 py-1.5 rounded-full text-xs transition-all ${
                     sortBy === opt.value
                       ? "bg-[#d4a5a5] text-white"
-                      : "text-gray-600 hover:bg-gray-200"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                   }`}
                 >
                   <span className="sm:hidden">{opt.label}</span>
@@ -385,7 +385,7 @@ function SeeAllModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
             >
               <X size={20} />
             </button>
@@ -465,10 +465,10 @@ function CountrySection({
             className="flex items-center gap-2 sm:gap-3 group flex-1 text-left"
           >
             <h2 className="text-lg sm:text-xl">{data.country_name}</h2>
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-gray-400 dark:text-gray-500">
               {localShows.length} picks
             </span>
-            <div className="text-gray-400 group-hover:text-gray-600 transition-colors">
+            <div className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
               {collapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
             </div>
           </button>
@@ -538,16 +538,16 @@ function DismissedSection({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="mt-10 sm:mt-12 pt-8 border-t border-gray-100"
+      className="mt-10 sm:mt-12 pt-8 border-t border-gray-100 dark:border-gray-800"
     >
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="flex items-center gap-3 mb-4 group w-full text-left"
       >
-        <ThumbsDown size={18} className="text-gray-400" />
-        <h2 className="text-base sm:text-lg text-gray-500">Not For Me</h2>
-        <span className="text-sm text-gray-300">{dismissed.length} shows</span>
-        <div className="ml-auto text-gray-300 group-hover:text-gray-500 transition-colors">
+        <ThumbsDown size={18} className="text-gray-400 dark:text-gray-500" />
+        <h2 className="text-base sm:text-lg text-gray-500 dark:text-gray-400">Not For Me</h2>
+        <span className="text-sm text-gray-300 dark:text-gray-600">{dismissed.length} shows</span>
+        <div className="ml-auto text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors">
           {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
         </div>
       </button>
@@ -711,7 +711,7 @@ export default function RecommendationsPage() {
   const orderedCountries = COUNTRY_ORDER.filter((c) => recs && recs[c]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Header */}
         <motion.div
@@ -721,11 +721,11 @@ export default function RecommendationsPage() {
         >
           <div>
             <h1 className="text-2xl sm:text-4xl mb-1 sm:mb-2">For You</h1>
-            <p className="text-gray-500 text-sm sm:text-base">
+            <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">
               Personalized picks based on your taste
             </p>
             {formattedDate && !generating && (
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 Last updated: {formattedDate}
               </p>
             )}
@@ -785,7 +785,7 @@ export default function RecommendationsPage() {
         {loadingCache && (
           <div className="flex flex-col items-center justify-center py-32">
             <div className="w-8 h-8 border-2 border-[#d4a5a5] border-t-transparent rounded-full animate-spin mb-3" />
-            <p className="text-gray-400 text-sm">Loading...</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm">Loading...</p>
           </div>
         )}
 

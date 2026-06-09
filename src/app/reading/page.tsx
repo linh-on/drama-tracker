@@ -48,7 +48,7 @@ const STATUS_CONFIG: Record<
   },
   PLAN_TO_READ: {
     label: "Plan to Read",
-    color: "bg-gray-100 text-gray-600 border-gray-200",
+    color: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700",
     icon: "🕐",
   },
 };
@@ -86,8 +86,8 @@ function ManageCategoriesPanel({
   };
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-6">
-      <h3 className="text-sm font-medium text-gray-700 mb-4">
+    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 mb-6">
+      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
         Manage Categories
       </h3>
       <div className="flex gap-2 mb-4">
@@ -97,7 +97,7 @@ function ManageCategoriesPanel({
           onChange={(e) => setNewLabel(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           placeholder="New category name..."
-          className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm"
+          className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-xl text-sm"
         />
         <button
           onClick={handleAdd}
@@ -113,9 +113,9 @@ function ManageCategoriesPanel({
         {categories.map((cat) => (
           <div
             key={cat.id}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm"
           >
-            <span className="text-gray-700">{cat.label}</span>
+            <span className="text-gray-700 dark:text-gray-300">{cat.label}</span>
             {confirmDeleteId === cat.id ? (
               <div className="flex items-center gap-1 ml-1">
                 <button
@@ -126,10 +126,10 @@ function ManageCategoriesPanel({
                 >
                   Yes
                 </button>
-                <span className="text-gray-300">|</span>
+                <span className="text-gray-300 dark:text-gray-600">|</span>
                 <button
                   onClick={() => setConfirmDeleteId(null)}
-                  className="text-xs text-gray-400 hover:text-gray-600"
+                  className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   No
                 </button>
@@ -137,7 +137,7 @@ function ManageCategoriesPanel({
             ) : (
               <button
                 onClick={() => setConfirmDeleteId(cat.id)}
-                className="text-gray-300 hover:text-red-400 transition-colors ml-1"
+                className="text-gray-300 dark:text-gray-600 hover:text-red-400 transition-colors ml-1"
               >
                 <X size={12} />
               </button>
@@ -161,7 +161,7 @@ function BookCard({
 }) {
   const status = STATUS_CONFIG[book.status] || {
     label: book.status,
-    color: "bg-gray-100 text-gray-600 border-gray-200",
+    color: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700",
     icon: "📖",
   };
   const categoryLabel =
@@ -173,7 +173,7 @@ function BookCard({
       className="cursor-pointer"
       onClick={onClick}
     >
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-4 space-y-2">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-4 space-y-2">
         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-[#f5e6e8] text-[#8b5a6b]">
           {categoryLabel}
         </span>
@@ -184,7 +184,7 @@ function BookCard({
           {status.icon} {status.label}
         </span>
         {book.current_chapter && (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 dark:text-gray-500">
             {book.status === "READING" ? "📖 " : "⏸ "}
             {book.current_chapter}
           </p>
@@ -195,7 +195,7 @@ function BookCard({
               <span
                 key={kw.code}
                 style={{ color: kw.color }}
-                className="text-xs px-2 py-0.5 rounded-full bg-gray-50 border border-gray-200"
+                className="text-xs px-2 py-0.5 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
               >
                 {kw.label}
               </span>
@@ -220,14 +220,14 @@ function MobileFilterSection({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-gray-200 rounded-2xl overflow-hidden">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-white"
+        className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900"
       >
         <div className="flex items-center gap-2">
-          <Filter size={14} className="text-gray-400" />
-          <span className="text-sm text-gray-700">{label}</span>
+          <Filter size={14} className="text-gray-400 dark:text-gray-500" />
+          <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
           {activeLabel && (
             <span className="text-xs bg-[#d4a5a5] text-white px-2 py-0.5 rounded-full">
               {activeLabel}
@@ -235,13 +235,13 @@ function MobileFilterSection({
           )}
         </div>
         <span
-          className={`text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`text-gray-400 dark:text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         >
           ▾
         </span>
       </button>
       {open && (
-        <div className="border-t border-gray-100 px-2 pb-2 bg-white">
+        <div className="border-t border-gray-100 dark:border-gray-800 px-2 pb-2 bg-white dark:bg-gray-900">
           {children}
         </div>
       )}
@@ -372,7 +372,7 @@ export default function ReadingPage() {
     );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Header */}
         <motion.div
@@ -382,15 +382,15 @@ export default function ReadingPage() {
         >
           <div>
             <h1 className="text-2xl sm:text-4xl mb-1 sm:mb-2">Reading List</h1>
-            <p className="text-gray-500 text-sm">{filtered.length} stories</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">{filtered.length} stories</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowManageCategories(!showManageCategories)}
               className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-full transition-colors text-sm ${
                 showManageCategories
-                  ? "bg-gray-200 text-gray-700"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
             >
               <Settings size={15} />
@@ -438,14 +438,14 @@ export default function ReadingPage() {
             placeholder="Search titles..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50"
+            className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500"
           />
 
           {/* ── Desktop filters ── */}
           <div className="hidden sm:block space-y-3">
             <div className="flex items-center gap-2">
-              <Filter size={16} className="text-gray-400" />
-              <span className="text-sm text-gray-600">Status</span>
+              <Filter size={16} className="text-gray-400 dark:text-gray-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {statusFilters.map((f) => (
@@ -455,7 +455,7 @@ export default function ReadingPage() {
                   className={`px-4 py-2 rounded-full text-sm transition-all ${
                     statusFilter === f.value
                       ? "bg-[#d4a5a5] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                   }`}
                 >
                   {f.label}
@@ -464,8 +464,8 @@ export default function ReadingPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Filter size={16} className="text-gray-400" />
-              <span className="text-sm text-gray-600">Category</span>
+              <Filter size={16} className="text-gray-400 dark:text-gray-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Category</span>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -473,7 +473,7 @@ export default function ReadingPage() {
                 className={`px-4 py-2 rounded-full text-sm transition-all ${
                   categoryFilter === "ALL"
                     ? "bg-[#d4a5a5] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 }`}
               >
                 All
@@ -485,7 +485,7 @@ export default function ReadingPage() {
                   className={`px-4 py-2 rounded-full text-sm transition-all ${
                     categoryFilter === cat.code
                       ? "bg-[#d4a5a5] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                   }`}
                 >
                   {cat.label}
@@ -494,10 +494,10 @@ export default function ReadingPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Filter size={16} className="text-gray-400" />
-              <span className="text-sm text-gray-600">Keywords</span>
+              <Filter size={16} className="text-gray-400 dark:text-gray-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Keywords</span>
               {selectedKeywords.length > 0 && (
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   (showing stories with ALL selected)
                 </span>
               )}
@@ -508,7 +508,7 @@ export default function ReadingPage() {
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-all ${
                   favoritesOnly
                     ? "bg-[#f5e6e8] text-[#d4a5a5] border-2 border-[#d4a5a5]"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 }`}
               >
                 <Heart
@@ -531,7 +531,7 @@ export default function ReadingPage() {
                     className={`px-4 py-2 rounded-full text-sm transition-all border-2 ${
                       isSelected
                         ? "border-transparent"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-transparent"
                     }`}
                   >
                     {kw.label}
@@ -547,7 +547,7 @@ export default function ReadingPage() {
                     setSelectedKeywords([]);
                     setFavoritesOnly(false);
                   }}
-                  className="px-4 py-2 rounded-full text-sm bg-gray-200 text-gray-600 hover:bg-gray-300"
+                  className="px-4 py-2 rounded-full text-sm bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600"
                 >
                   Clear ✕
                 </button>
@@ -575,7 +575,7 @@ export default function ReadingPage() {
                     className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all ${
                       statusFilter === f.value
                         ? "bg-[#d4a5a5]/15 text-[#d4a5a5] font-medium"
-                        : "text-gray-700 hover:bg-gray-50"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >
                     {f.label}
@@ -603,7 +603,7 @@ export default function ReadingPage() {
                   className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all ${
                     categoryFilter === "ALL"
                       ? "bg-[#d4a5a5]/15 text-[#d4a5a5] font-medium"
-                      : "text-gray-700 hover:bg-gray-50"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                   }`}
                 >
                   All
@@ -618,7 +618,7 @@ export default function ReadingPage() {
                     className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all ${
                       categoryFilter === cat.code
                         ? "bg-[#d4a5a5]/15 text-[#d4a5a5] font-medium"
-                        : "text-gray-700 hover:bg-gray-50"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >
                     {cat.label}
@@ -645,7 +645,7 @@ export default function ReadingPage() {
                   className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all ${
                     favoritesOnly
                       ? "bg-[#d4a5a5]/15 text-[#d4a5a5] font-medium"
-                      : "text-gray-700 hover:bg-gray-50"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -666,7 +666,7 @@ export default function ReadingPage() {
                       className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all ${
                         isSelected
                           ? "bg-[#d4a5a5]/15 text-[#d4a5a5] font-medium"
-                          : "text-gray-700 hover:bg-gray-50"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                       }`}
                     >
                       {kw.label}
@@ -680,7 +680,7 @@ export default function ReadingPage() {
                       setSelectedKeywords([]);
                       setFavoritesOnly(false);
                     }}
-                    className="mt-1 px-4 py-2 rounded-xl text-sm text-red-400 hover:bg-red-50 transition-all text-left"
+                    className="mt-1 px-4 py-2 rounded-xl text-sm text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-left"
                   >
                     Clear all ✕
                   </button>

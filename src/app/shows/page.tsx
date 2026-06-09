@@ -33,14 +33,14 @@ function MobileFilterSection({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-gray-200 rounded-2xl overflow-hidden">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-white"
+        className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900"
       >
         <div className="flex items-center gap-2">
-          <Filter size={14} className="text-gray-400" />
-          <span className="text-sm text-gray-700">{label}</span>
+          <Filter size={14} className="text-gray-400 dark:text-gray-500" />
+          <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
           {activeLabel && (
             <span className="text-xs bg-[#d4a5a5] text-white px-2 py-0.5 rounded-full">
               {activeLabel}
@@ -48,13 +48,13 @@ function MobileFilterSection({
           )}
         </div>
         <span
-          className={`text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`text-gray-400 dark:text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         >
           ▾
         </span>
       </button>
       {open && (
-        <div className="border-t border-gray-100 px-2 pb-2 bg-white">
+        <div className="border-t border-gray-100 dark:border-gray-800 px-2 pb-2 bg-white dark:bg-gray-900">
           {children}
         </div>
       )}
@@ -147,7 +147,7 @@ export default function MoviePage() {
     );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Header */}
         <motion.div
@@ -157,7 +157,7 @@ export default function MoviePage() {
         >
           <div>
             <h1 className="text-2xl sm:text-4xl mb-1 sm:mb-3">My Shows</h1>
-            <p className="text-gray-600 text-sm">{filtered.length} shows</p>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">{filtered.length} shows</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -178,12 +178,12 @@ export default function MoviePage() {
               placeholder="Search titles..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50"
+              className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500"
             />
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-              className="px-3 py-2 rounded-xl text-sm border bg-gray-50 text-gray-600 border-gray-200"
+              className="px-3 py-2 rounded-xl text-sm border bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700"
             >
               <option value="NONE">Sort</option>
               <option value="RATING_DESC">Rating ↓</option>
@@ -196,8 +196,8 @@ export default function MoviePage() {
           {/* ── Desktop filters ── */}
           <div className="hidden sm:block space-y-3">
             <div className="flex items-center gap-2">
-              <Filter size={14} className="text-gray-400" />
-              <span className="text-sm text-gray-600">Status</span>
+              <Filter size={14} className="text-gray-400 dark:text-gray-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {statusFilters.map((f) => (
@@ -207,7 +207,7 @@ export default function MoviePage() {
                   className={`px-4 py-2 rounded-full text-sm transition-all ${
                     statusFilter === f.value
                       ? "bg-[#d4a5a5] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                   }`}
                 >
                   {f.label}
@@ -216,8 +216,8 @@ export default function MoviePage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Filter size={14} className="text-gray-400" />
-              <span className="text-sm text-gray-600">Country</span>
+              <Filter size={14} className="text-gray-400 dark:text-gray-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Country</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {countryFilters.map((f) => (
@@ -227,7 +227,7 @@ export default function MoviePage() {
                   className={`px-4 py-2 rounded-full text-sm transition-all ${
                     countryFilter === f.value
                       ? "bg-[#d4a5a5] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                   }`}
                 >
                   {f.label}
@@ -236,10 +236,10 @@ export default function MoviePage() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <Filter size={14} className="text-gray-400" />
-              <span className="text-sm text-gray-600">Keywords</span>
+              <Filter size={14} className="text-gray-400 dark:text-gray-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Keywords</span>
               {selectedKeywords.length > 0 && (
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   (showing shows with ALL selected)
                 </span>
               )}
@@ -249,8 +249,8 @@ export default function MoviePage() {
                 onClick={() => setFavoritesOnly(!favoritesOnly)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-all ${
                   favoritesOnly
-                    ? "bg-[#f5e6e8] text-[#d4a5a5] border-2 border-[#d4a5a5]"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-[#f5e6e8] dark:bg-[#d4a5a5]/20 text-[#d4a5a5] border-2 border-[#d4a5a5]"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 }`}
               >
                 <Heart
@@ -277,7 +277,7 @@ export default function MoviePage() {
                     className={`px-4 py-2 rounded-full text-sm transition-all border-2 ${
                       isSelected
                         ? "border-transparent"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-transparent"
                     }`}
                   >
                     {kw.label}
@@ -293,7 +293,7 @@ export default function MoviePage() {
                     setSelectedKeywords([]);
                     setFavoritesOnly(false);
                   }}
-                  className="px-4 py-2 rounded-full text-sm bg-gray-200 text-gray-600 hover:bg-gray-300 transition-all"
+                  className="px-4 py-2 rounded-full text-sm bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
                 >
                   Clear ✕
                 </button>
@@ -321,7 +321,7 @@ export default function MoviePage() {
                     className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all ${
                       statusFilter === f.value
                         ? "bg-[#d4a5a5]/15 text-[#d4a5a5] font-medium"
-                        : "text-gray-700 hover:bg-gray-50"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >
                     {f.label}
@@ -351,7 +351,7 @@ export default function MoviePage() {
                     className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all ${
                       countryFilter === f.value
                         ? "bg-[#d4a5a5]/15 text-[#d4a5a5] font-medium"
-                        : "text-gray-700 hover:bg-gray-50"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >
                     {f.label}
@@ -378,7 +378,7 @@ export default function MoviePage() {
                   className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all ${
                     favoritesOnly
                       ? "bg-[#d4a5a5]/15 text-[#d4a5a5] font-medium"
-                      : "text-gray-700 hover:bg-gray-50"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -399,7 +399,7 @@ export default function MoviePage() {
                       className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all ${
                         isSelected
                           ? "bg-[#d4a5a5]/15 text-[#d4a5a5] font-medium"
-                          : "text-gray-700 hover:bg-gray-50"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                       }`}
                     >
                       {kw.label}
@@ -413,7 +413,7 @@ export default function MoviePage() {
                       setSelectedKeywords([]);
                       setFavoritesOnly(false);
                     }}
-                    className="mt-1 px-4 py-2 rounded-xl text-sm text-red-400 hover:bg-red-50 transition-all text-left"
+                    className="mt-1 px-4 py-2 rounded-xl text-sm text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-left"
                   >
                     Clear all ✕
                   </button>
@@ -439,8 +439,8 @@ export default function MoviePage() {
 
         {filtered.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-gray-400 text-lg">No shows found</p>
-            <p className="text-gray-400 text-sm mt-2">
+            <p className="text-gray-400 dark:text-gray-500 text-lg">No shows found</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
               Try adjusting your filters
             </p>
           </div>

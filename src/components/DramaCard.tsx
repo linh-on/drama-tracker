@@ -19,7 +19,7 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
         className="flex-shrink-0 w-[160px] sm:w-[200px] cursor-pointer"
         onClick={onClick}
       >
-        <div className="relative rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+        <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
           <div className="aspect-[2/3] bg-gradient-to-br from-[#f5e6e8] to-[#e8d5f0] flex items-center justify-center overflow-hidden">
             {show.poster_url ? (
               <img
@@ -37,7 +37,7 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
             </h3>
             <CategoryBadge country={show.country} />
             {show.current_ep && (
-              <p className="text-[10px] text-gray-500 mt-1">
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
                 {show.status === "CURRENTLY_WATCHING" ? "▶ " : "⏸ "}
                 {show.current_ep}
               </p>
@@ -54,7 +54,7 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
       className="cursor-pointer"
       onClick={onClick}
     >
-      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
         {/* Poster */}
         <div className="aspect-[2/3] bg-gradient-to-br from-[#f5e6e8] to-[#e8d5f0] flex items-center justify-center overflow-hidden">
           {show.poster_url ? (
@@ -84,7 +84,7 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
                 <span
                   key={kw.code}
                   style={{ color: kw.color }}
-                  className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-gray-50 border border-gray-200"
+                  className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
                 >
                   {kw.label}
                 </span>
@@ -92,7 +92,7 @@ export function DramaCard({ show, onClick, variant = "grid" }: DramaCardProps) {
             </div>
           )}
           {show.current_ep && (
-            <p className="text-[10px] sm:text-xs text-gray-400">
+            <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500">
               {show.status === "CURRENTLY_WATCHING" ? "▶ " : "⏸ "}
               {show.current_ep}
             </p>

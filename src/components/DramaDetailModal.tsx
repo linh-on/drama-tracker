@@ -52,6 +52,10 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
     });
   };
 
+  const inputCls =
+    "px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm w-full dark:text-gray-300";
+  const labelCls = "block text-sm text-gray-600 dark:text-gray-400 mb-1";
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4">
@@ -66,15 +70,15 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 40 }}
-          className="relative bg-white rounded-3xl shadow-2xl w-full sm:max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto"
+          className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full sm:max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto"
         >
           <div className="sm:hidden flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full" />
           </div>
 
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 hover:bg-gray-100 rounded-full z-10 transition-colors"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full z-10 transition-colors"
           >
             <X size={20} />
           </button>
@@ -115,7 +119,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                         poster_url: e.target.value || null,
                       })
                     }
-                    className="mt-2 w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                    className="mt-2 w-full px-2 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs dark:text-gray-300"
                     placeholder="Paste poster URL..."
                   />
                 </div>
@@ -134,7 +138,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                         onKeyDown={(e) =>
                           e.key === "Enter" && setEditingTitle(false)
                         }
-                        className="w-full text-lg px-2 py-1 border border-[#d4a5a5] rounded-xl bg-gray-50 outline-none"
+                        className="w-full text-lg px-2 py-1 border border-[#d4a5a5] rounded-xl bg-gray-50 dark:bg-gray-800 outline-none dark:text-gray-200"
                         autoFocus
                       />
                     ) : (
@@ -144,7 +148,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                         </h2>
                         <button
                           onClick={() => setEditingTitle(true)}
-                          className="text-xs text-gray-400 hover:text-gray-600 mt-0.5 px-2 py-0.5 bg-gray-100 rounded-full flex-shrink-0"
+                          className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 mt-0.5 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full flex-shrink-0"
                         >
                           ✏️
                         </button>
@@ -176,7 +180,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                       onKeyDown={(e) =>
                         e.key === "Enter" && setEditingTitle(false)
                       }
-                      className="w-full text-2xl px-2 py-1 border border-[#d4a5a5] rounded-xl bg-gray-50 outline-none"
+                      className="w-full text-2xl px-2 py-1 border border-[#d4a5a5] rounded-xl bg-gray-50 dark:bg-gray-800 outline-none dark:text-gray-200"
                       autoFocus
                     />
                   ) : (
@@ -184,7 +188,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                       <h2 className="text-2xl leading-snug">{edited.title}</h2>
                       <button
                         onClick={() => setEditingTitle(true)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400 hover:text-gray-600 mt-1 px-2 py-0.5 bg-gray-100 rounded-full flex-shrink-0"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 mt-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full flex-shrink-0"
                       >
                         ✏️ edit
                       </button>
@@ -197,18 +201,14 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Rating
-                    </label>
+                    <label className={labelCls}>Rating</label>
                     <StarRating
                       rating={edited.rating}
                       onRate={(r) => setEdited({ ...edited, rating: r })}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Country
-                    </label>
+                    <label className={labelCls}>Country</label>
                     <select
                       value={edited.country}
                       onChange={(e) =>
@@ -217,7 +217,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                           country: e.target.value as Country,
                         })
                       }
-                      className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm w-full"
+                      className={inputCls}
                     >
                       <option value="KOREAN">Korean</option>
                       <option value="THAI">Thai</option>
@@ -230,9 +230,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Type
-                    </label>
+                    <label className={labelCls}>Type</label>
                     <select
                       value={edited.type}
                       onChange={(e) =>
@@ -241,7 +239,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                           type: e.target.value as ShowType,
                         })
                       }
-                      className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm w-full"
+                      className={inputCls}
                     >
                       <option value="SERIES">Series</option>
                       <option value="MOVIE">Movie</option>
@@ -251,9 +249,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Status
-                    </label>
+                    <label className={labelCls}>Status</label>
                     <select
                       value={edited.status}
                       onChange={(e) =>
@@ -262,7 +258,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                           status: e.target.value as WatchStatus,
                         })
                       }
-                      className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm w-full"
+                      className={inputCls}
                     >
                       <option value="CURRENTLY_WATCHING">
                         Currently Watching
@@ -276,32 +272,28 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                   </div>
                   {edited.status === "CURRENTLY_WATCHING" && (
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">
-                        Current Episode
-                      </label>
+                      <label className={labelCls}>Current Episode</label>
                       <input
                         type="text"
                         value={edited.current_ep ?? ""}
                         onChange={(e) =>
                           setEdited({ ...edited, current_ep: e.target.value })
                         }
-                        className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm w-full"
+                        className={inputCls}
                         placeholder="e.g. ep 5"
                       />
                     </div>
                   )}
                   {edited.status === "PARTIALLY_WATCHED" && (
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">
-                        Stopped At
-                      </label>
+                      <label className={labelCls}>Stopped At</label>
                       <input
                         type="text"
                         value={edited.current_ep ?? ""}
                         onChange={(e) =>
                           setEdited({ ...edited, current_ep: e.target.value })
                         }
-                        className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm w-full"
+                        className={inputCls}
                         placeholder="e.g. ep 8"
                       />
                     </div>
@@ -314,9 +306,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
             <div className="sm:hidden space-y-3 mb-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    Country
-                  </label>
+                  <label className={labelCls}>Country</label>
                   <select
                     value={edited.country}
                     onChange={(e) =>
@@ -325,7 +315,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                         country: e.target.value as Country,
                       })
                     }
-                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                    className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-gray-300"
                   >
                     <option value="KOREAN">Korean</option>
                     <option value="THAI">Thai</option>
@@ -336,15 +326,13 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    Type
-                  </label>
+                  <label className={labelCls}>Type</label>
                   <select
                     value={edited.type}
                     onChange={(e) =>
                       setEdited({ ...edited, type: e.target.value as ShowType })
                     }
-                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                    className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-gray-300"
                   >
                     <option value="SERIES">Series</option>
                     <option value="MOVIE">Movie</option>
@@ -355,9 +343,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                 </div>
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Status
-                </label>
+                <label className={labelCls}>Status</label>
                 <select
                   value={edited.status}
                   onChange={(e) =>
@@ -366,7 +352,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                       status: e.target.value as WatchStatus,
                     })
                   }
-                  className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                  className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-gray-300"
                 >
                   <option value="CURRENTLY_WATCHING">Currently Watching</option>
                   <option value="PARTIALLY_WATCHED">Partially Watched</option>
@@ -376,32 +362,28 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
               </div>
               {edited.status === "CURRENTLY_WATCHING" && (
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    Current Episode
-                  </label>
+                  <label className={labelCls}>Current Episode</label>
                   <input
                     type="text"
                     value={edited.current_ep ?? ""}
                     onChange={(e) =>
                       setEdited({ ...edited, current_ep: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                    className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-gray-300"
                     placeholder="e.g. ep 5"
                   />
                 </div>
               )}
               {edited.status === "PARTIALLY_WATCHED" && (
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
-                    Stopped At
-                  </label>
+                  <label className={labelCls}>Stopped At</label>
                   <input
                     type="text"
                     value={edited.current_ep ?? ""}
                     onChange={(e) =>
                       setEdited({ ...edited, current_ep: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                    className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-gray-300"
                     placeholder="e.g. ep 8"
                   />
                 </div>
@@ -410,15 +392,13 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
 
             {/* Synopsis */}
             <div className="mb-4">
-              <label className="block text-sm text-gray-600 mb-2">
-                Synopsis
-              </label>
+              <label className={labelCls}>Synopsis</label>
               <textarea
                 value={edited.synopsis ?? ""}
                 onChange={(e) =>
                   setEdited({ ...edited, synopsis: e.target.value || null })
                 }
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm resize-none"
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm resize-none dark:text-gray-300"
                 rows={3}
                 placeholder="Add a synopsis..."
               />
@@ -427,11 +407,9 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
             <div className="space-y-4">
               {/* Keywords */}
               <div>
-                <label className="block text-sm text-gray-600 mb-2">
-                  Keywords
-                </label>
+                <label className={labelCls}>Keywords</label>
                 {allKeywords.length === 0 ? (
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     No keywords available. Add some in the Keywords page!
                   </p>
                 ) : (
@@ -452,7 +430,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                           className={`px-2.5 py-1 rounded-full text-xs border transition-all ${
                             isSelected
                               ? "border-transparent"
-                              : "bg-white hover:opacity-80"
+                              : "bg-white dark:bg-gray-800 hover:opacity-80"
                           }`}
                         >
                           {kw.label} {isSelected && "✓"}
@@ -465,15 +443,13 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
 
               {/* Notes */}
               <div>
-                <label className="block text-sm text-gray-600 mb-2">
-                  My Notes
-                </label>
+                <label className={labelCls}>My Notes</label>
                 <textarea
                   value={edited.comment ?? ""}
                   onChange={(e) =>
                     setEdited({ ...edited, comment: e.target.value })
                   }
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm resize-none"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm resize-none dark:text-gray-300"
                   rows={3}
                   placeholder="Add your thoughts..."
                 />
@@ -486,8 +462,8 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                 }
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all border ${
                   edited.is_favorite
-                    ? "bg-[#f5e6e8] text-[#d4a5a5] border-[#d4a5a5]"
-                    : "bg-gray-100 text-gray-500 border-gray-200"
+                    ? "bg-[#f5e6e8] dark:bg-[#d4a5a5]/20 text-[#d4a5a5] border-[#d4a5a5]"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700"
                 }`}
               >
                 {edited.is_favorite ? "❤️ Favorited" : "🤍 Add to Favorites"}
@@ -498,16 +474,16 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border border-red-200 rounded-2xl p-4"
+                  className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4"
                 >
-                  <p className="text-sm text-red-600 mb-3">
+                  <p className="text-sm text-red-600 dark:text-red-400 mb-3">
                     Are you sure you want to delete{" "}
                     <strong>{show.title}</strong>? This cannot be undone.
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setConfirmDelete(false)}
-                      className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200"
+                      className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700"
                     >
                       Cancel
                     </button>
@@ -523,10 +499,10 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
             </div>
 
             {/* Action buttons */}
-            <div className="flex gap-3 mt-6 pt-6 border-t border-gray-100">
+            <div className="flex gap-3 mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-red-50 rounded-full transition-colors"
+                className="flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
               >
                 <Trash2 size={16} />
                 <span className="hidden sm:inline">Delete</span>
@@ -534,7 +510,7 @@ export function DramaDetailModal({ show, onClose, onUpdate, onDelete }: Props) {
               <div className="flex-1" />
               <button
                 onClick={onClose}
-                className="px-4 sm:px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors text-sm"
+                className="px-4 sm:px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm"
               >
                 Cancel
               </button>
