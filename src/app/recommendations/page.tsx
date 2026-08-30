@@ -190,7 +190,7 @@ function ShowCard({
           )}
 
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-            {show.media_type === "movie" ? "🎬 Movie" : "📺 Series"}
+            {show.media_type === "movie" ? "Movie" : "Series"}
           </span>
 
           <div className="mt-1.5 flex items-center gap-1">
@@ -792,7 +792,6 @@ export default function RecommendationsPage() {
         {/* No cache */}
         {!loadingCache && !recs && !generating && !error && (
           <div className="flex flex-col items-center justify-center py-24 sm:py-32 text-gray-400 text-center px-4">
-            <span className="text-5xl mb-4">✨</span>
             <p className="text-lg mb-2">Ready to discover new shows?</p>
             <p className="text-sm">
               Tap "Refresh" to generate your personalized picks!

@@ -49,9 +49,6 @@ export default function LoginPage() {
         className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md"
       >
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#d4a5a5] to-[#c8a2c8] flex items-center justify-center mb-4 shadow-md">
-            <span className="text-white text-2xl">📺</span>
-          </div>
           <h1 className="text-3xl tracking-tight">Drama Tracker</h1>
           <p className="text-gray-400 text-sm mt-1">Sign in to your account</p>
         </div>

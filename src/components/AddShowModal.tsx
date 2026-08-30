@@ -284,8 +284,8 @@ export function AddShowModal({ onClose, onAdd }: Props) {
                           </p>
                           <p className="text-xs text-gray-400">
                             {result.media_type === "movie"
-                              ? "🎬 Movie"
-                              : "📺 Series"}
+                              ? "Movie"
+                              : "Series"}
                             {result.year && ` · ${result.year}`}
                           </p>
                         </div>
