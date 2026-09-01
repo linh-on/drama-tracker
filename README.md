@@ -48,9 +48,37 @@ A full-stack solo project featuring multi-user auth, a reading list, TMDB-powere
 | Database | PostgreSQL on Neon |
 | Auth | NextAuth v5 beta, bcryptjs |
 | Email | Nodemailer + Gmail SMTP |
-| ML | Python — pandas, scikit-learn |
+| ML | Python - pandas, scikit-learn |
 | Data | TMDB API |
+| Testing | pytest |
+| CI/CD | GitHub Actions |
 | Deployment | Vercel |
+
+---
+
+## CI/CD Pipeline
+
+Every push to `main` runs through a GitHub Actions pipeline before anything reaches production.
+
+```
+git push to main
+        ↓
+  ┌─────────────┬─────────────┐
+  │    test     │    build    │
+  │  pytest -v  │  next build │
+  └─────────────┴─────────────┘
+        ↓ (both must pass)
+      deploy
+  vercel deploy --prod
+```
+
+The `deploy` job declares `needs: [test, build]`, so it is skipped entirely if either check fails. A failing test means the previous deployment stays live rather than being replaced by broken code.
+
+Vercel's Git integration is intentionally disconnected. Production deploys go through the Vercel CLI from inside the workflow, which makes GitHub Actions the only path to production and keeps the test gate meaningful.
+
+Pull requests run `test` and `build` but never `deploy`.
+
+Workflow file: `.github/workflows/ci-cd.yml`
 
 ---
 
@@ -72,7 +100,7 @@ Score each candidate
   20% weighted keyword match
         ↓
 Top 10 shown per country + all candidates in "See All"
-Results cached in DB — dismissed shows excluded from future runs
+Results cached in DB - dismissed shows excluded from future runs
 ```
 
 ---
@@ -85,11 +113,15 @@ src/
 ├── components/   # Reusable UI components
 └── lib/          # DB, auth, email helpers
 
-recommendation/   # Python ML system
+python/           # Python ML system
 ├── recommend.py        # Main script
 ├── taste_profile.py    # Builds per-country taste profiles
 ├── tmdb_fetcher.py     # Fetches TMDB candidates + keyword cache
-└── ranker.py           # TF-IDF + cosine similarity ranking
+├── ranker.py           # TF-IDF + cosine similarity ranking
+└── tests/              # pytest suite for ranking and taste-profile logic
+
+.github/workflows/
+└── ci-cd.yml     # Test, build, and gated deploy
 ```
 
 ---
@@ -106,8 +138,15 @@ npm run dev
 The recommendation system requires Python 3.8+:
 
 ```bash
-cd recommendation
-pip install pandas sqlalchemy scikit-learn requests psycopg2-binary python-dotenv
+cd python
+pip install -r requirements.txt
+```
+
+Run the test suite locally before pushing:
+
+```bash
+cd python
+pytest -v
 ```
 
 ---
@@ -122,6 +161,7 @@ This started as a simple list tracker and grew into a multi-user platform with a
 - Background job patterns in Node.js
 - TF-IDF vectorization and cosine similarity for content-based filtering
 - Vercel deployment with Neon
+- Building a CI/CD pipeline where failing tests block production deploys
 
 ---
 
@@ -130,4 +170,3 @@ This started as a simple list tracker and grew into a multi-user platform with a
 ![Dashboard](screenshots/dashboard.png)
 ![My Shows](screenshots/my-shows.png)
 ![Recommendations](screenshots/recommendations.png)
-
